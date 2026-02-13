@@ -28,8 +28,7 @@ app = FastAPI(
 # CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://www.localhost:8000"],
-    allow_credentials=True,
+    allow_origins=["http://localhost:8080"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -47,7 +46,7 @@ app.include_router(paper.router, prefix="/paper", tags=["Paper Management"])
 app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 app.include_router(oauth.router, prefix="/auth", tags=["OAuth"])
 app.include_router(lecturer.router, prefix="/lecturer", tags=["Lecturer"])
-app.include_router(api_router)
+# app.include_router(api_router)
 
 
 @app.on_event("startup")
