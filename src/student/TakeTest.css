@@ -1,0 +1,291 @@
+/* ========== PAGE ========== */
+.tt-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background: #f5f7fa;
+}
+
+/* ========== HEADER ========== */
+.tt-header {
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 0 24px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.tt-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tt-back-btn {
+  background: none;
+  border: none;
+  font-size: 13px;
+  color: #667eea;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background 0.15s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.tt-back-btn:hover {
+  background: #f0f0f0;
+}
+
+.tt-header-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111;
+  line-height: 1.2;
+}
+
+.tt-header-sub {
+  font-size: 11px;
+  color: #999;
+  margin-top: 1px;
+}
+
+.tt-header-counter {
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+  white-space: nowrap;
+}
+
+/* ========== PROGRESS BAR ========== */
+.tt-progress-track {
+  height: 3px;
+  background: #e0e0e0;
+}
+
+.tt-progress-fill {
+  height: 100%;
+  background: #667eea;
+  transition: width 0.3s ease;
+}
+
+/* ========== BODY ========== */
+.tt-body {
+  max-width: 720px;
+  width: 100%;
+  margin: 32px auto;
+  padding: 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ========== QUESTION CARD ========== */
+.tt-q-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tt-q-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tt-q-num {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #667eea;
+}
+
+.tt-q-marks {
+  font-size: 11px;
+  font-weight: 600;
+  background: #f0f0f0;
+  color: #555;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.tt-q-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111;
+  line-height: 1.6;
+}
+
+.tt-answer-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #333;
+  resize: vertical;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+  line-height: 1.6;
+}
+
+.tt-answer-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
+}
+
+/* ========== NAVIGATION ========== */
+.tt-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tt-btn-ghost {
+  padding: 9px 18px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+  color: #333;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.tt-btn-ghost:hover:not(:disabled) {
+  background: #f9f9f9;
+  border-color: #bbb;
+}
+
+.tt-btn-ghost:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.tt-btn-primary {
+  padding: 9px 22px;
+  background: #333;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: inherit;
+}
+
+.tt-btn-primary:hover {
+  background: #555;
+}
+
+.tt-btn-submit {
+  padding: 9px 24px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: inherit;
+}
+
+.tt-btn-submit:hover:not(:disabled) {
+  background: #5a6fd6;
+}
+
+.tt-btn-submit:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* ========== CENTRE MESSAGE (loading / error) ========== */
+.tt-center-message {
+  text-align: center;
+  padding: 80px 24px;
+  color: #aaa;
+  font-size: 14px;
+}
+
+.tt-center-message-error {
+  color: #c33;
+}
+
+/* ========== DONE / SUCCESS CARD ========== */
+.tt-done-card {
+  max-width: 480px;
+  margin: 80px auto;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 48px 40px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.tt-done-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #f0f0f0;
+  color: #555;
+  font-size: 22px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 4px;
+}
+
+.tt-done-icon-success {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.tt-done-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111;
+}
+
+.tt-done-sub {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  max-width: 320px;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 600px) {
+  .tt-body {
+    margin: 20px auto;
+    padding: 0 16px;
+  }
+
+  .tt-q-card {
+    padding: 20px;
+  }
+
+  .tt-done-card {
+    margin: 40px 16px;
+    padding: 32px 24px;
+  }
+}

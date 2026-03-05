@@ -1,0 +1,311 @@
+/* ========== PAGE ========== */
+.gq-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #f5f7fa;
+}
+
+/* ========== TOPBAR ========== */
+.gq-topbar {
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 0 24px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.gq-topbar-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.gq-topbar-sub {
+  font-size: 13px;
+  color: #999;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gq-progress-inline {
+  display: inline-block;
+  width: 80px;
+  height: 4px;
+  background: #e0e0e0;
+  border-radius: 99px;
+  overflow: hidden;
+  vertical-align: middle;
+}
+
+.gq-progress-inline-fill {
+  display: block;
+  height: 100%;
+  background: #10b981;
+  border-radius: 99px;
+  transition: width 0.5s ease;
+}
+
+.gq-btn-outline {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+  color: #333;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.gq-btn-outline:hover {
+  background: #f9f9f9;
+  border-color: #bbb;
+}
+
+/* ========== FILTER TABS ========== */
+.gq-filter-row {
+  display: flex;
+  gap: 4px;
+  padding: 16px 24px 0;
+}
+
+.gq-filter-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px 6px 0 0;
+  background: transparent;
+  color: #666;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+  border-bottom: 2px solid transparent;
+}
+
+.gq-filter-tab:hover {
+  color: #333;
+  background: #f0f0f0;
+}
+
+.gq-filter-tab.active {
+  color: #1a1a1a;
+  font-weight: 600;
+  border-bottom: 2px solid #1a1a1a;
+  background: white;
+}
+
+.gq-filter-count {
+  font-size: 11px;
+  background: #f0f0f0;
+  color: #666;
+  padding: 1px 6px;
+  border-radius: 99px;
+  font-weight: 600;
+}
+
+.gq-filter-tab.active .gq-filter-count {
+  background: #1a1a1a;
+  color: #fff;
+}
+
+/* ========== TABLE CARD ========== */
+.gq-table-card {
+  margin: 0 24px 24px;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-top: none;
+  border-radius: 0 6px 8px 8px;
+  overflow: hidden;
+}
+
+.gq-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.gq-table thead th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #999;
+  background: #fafafa;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.gq-row {
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.gq-row:last-child {
+  border-bottom: none;
+}
+
+.gq-row:hover {
+  background: #fafafa;
+}
+
+.gq-table tbody td {
+  padding: 14px 16px;
+  vertical-align: middle;
+}
+
+.gq-cell-id {
+  font-size: 12px;
+  color: #999;
+  font-family: monospace;
+}
+
+/* ========== STUDENT CELL ========== */
+.gq-student {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gq-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+}
+
+.gq-student-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.gq-student-q {
+  font-size: 12px;
+  color: #999;
+  margin-top: 1px;
+}
+
+.gq-cell-assess {
+  font-size: 13px;
+  color: #555;
+}
+
+/* ========== SCORE CELL ========== */
+.gq-score {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.gq-score-high { color: #059669; }
+.gq-score-mid  { color: #d97706; }
+.gq-score-low  { color: #dc2626; }
+
+.gq-score-bar-track {
+  height: 4px;
+  background: #f0f0f0;
+  border-radius: 99px;
+  overflow: hidden;
+  width: 70px;
+}
+
+.gq-score-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.5s ease;
+}
+
+/* ========== CONFIDENCE BADGE ========== */
+.gq-conf-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.gq-conf-high   { background: #d1fae5; color: #065f46; }
+.gq-conf-mid    { background: #fef3c7; color: #92400e; }
+.gq-conf-low    { background: #fee2e2; color: #991b1b; }
+
+/* ========== STATUS CHIP ========== */
+.gq-status-chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.gq-chip-ai       { background: #dbeafe; color: #1e40af; }
+.gq-chip-review   { background: #fef3c7; color: #92400e; }
+.gq-chip-approved { background: #d1fae5; color: #065f46; }
+
+.gq-cell-date {
+  font-size: 12px;
+  color: #999;
+}
+
+/* ========== REVIEW BUTTON ========== */
+.gq-review-btn {
+  padding: 6px 14px;
+  border: 1px solid #1a1a1a;
+  border-radius: 4px;
+  background: #1a1a1a;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.gq-review-btn:hover {
+  background: #333;
+}
+
+/* ========== EMPTY STATE ========== */
+.gq-empty {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+  font-size: 14px;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+  .gq-topbar {
+    padding: 12px 16px;
+    height: auto;
+  }
+
+  .gq-filter-row {
+    padding: 12px 16px 0;
+    overflow-x: auto;
+  }
+
+  .gq-table-card {
+    margin: 0 16px 16px;
+    overflow-x: auto;
+  }
+}
