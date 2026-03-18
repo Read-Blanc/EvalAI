@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 
 // UserContext provides the authenticated user's session data (role, email, etc.)
 // and a logout function to any component in the tree without prop drilling.
-import { UserContext } from './UserContext';
+import { UserContext } from '../../src/UserContext';
 
 // Supabase client — used here to manage session lifecycle (restore, listen, sign out)
-import { supabase } from './supabaseClient';
+import { supabase } from '../../src/supabaseClient';
 
 // Public-facing pages — no login required
 import SplashScreen from './SplashScreen';             // Animated intro screen on first load
