@@ -289,3 +289,186 @@
     padding: 32px 24px;
   }
 }
+
+/* Append to existing TakeTest.css */
+
+/* Spinner */
+.tt-spinner {
+  width: 28px;
+  height: 28px;
+  border: 4px solid #e0e0e0;
+  border-top-color: #555;
+  border-radius: 50%;
+  animation: ttSpin 0.7s linear infinite;
+  margin: 0 auto 10px;
+}
+
+@keyframes ttSpin { to { transform: rotate(360deg); } }
+
+.tt-center-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 80px 24px;
+  color: #aaa;
+  font-size: 14px;
+  gap: 8px;
+}
+
+/* Header right cluster */
+.tt-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Timer */
+.tt-timer {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  background: white;
+  font-size: 13px;
+  color: #333;
+}
+
+.tt-timer-urgent {
+  background: #1a1a1a;
+  border-color: #1a1a1a;
+  color: white;
+}
+
+.tt-timer-value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Submit button in header */
+.tt-btn-submit-top {
+  padding: 7px 16px;
+  background: #1a1a1a;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+
+.tt-btn-submit-top:hover:not(:disabled) { background: #333; }
+.tt-btn-submit-top:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Timeout banner */
+.tt-timeout-banner {
+  background: #1a1a1a;
+  color: white;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px;
+}
+
+/* Question nav dots */
+.tt-nav-dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.tt-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid #e0e0e0;
+  background: white;
+  color: #aaa;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.tt-dot:hover           { border-color: #999; color: #333; }
+.tt-dot-answered        { background: #e5e7eb; border-color: #e5e7eb; color: #555; }
+.tt-dot-active          { background: #1a1a1a; border-color: #1a1a1a; color: white; }
+
+/* Word count */
+.tt-word-count {
+  font-size: 11px;
+  color: #bbb;
+  margin-top: 8px;
+}
+
+.tt-answered-check {
+  color: #555;
+  font-weight: 600;
+}
+
+/* Confirm modal */
+.tt-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.tt-modal {
+  background: white;
+  border-radius: 10px;
+  padding: 28px;
+  max-width: 380px;
+  width: 100%;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+
+.tt-modal-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 14px;
+}
+
+.tt-modal-warn {
+  background: #f9fafb;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: #333;
+}
+
+.tt-modal-note {
+  font-size: 11px;
+  color: #999;
+  margin-top: 4px;
+}
+
+.tt-modal-text {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 16px;
+}
+
+.tt-modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.tt-modal-actions .tt-btn-ghost,
+.tt-modal-actions .tt-btn-submit {
+  flex: 1;
+}

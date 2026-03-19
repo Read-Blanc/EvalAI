@@ -1,8 +1,9 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 import './ResultDetail.css';
 
-// ── Circular progress ring (mirrors GradingDetail) ──────────────────────────
+// ── Circular progress ring ───────────────────────────────────────────────────
 function CircularProgress({ value, max, size = 104, strokeWidth = 9 }) {
   const radius        = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -12,14 +13,11 @@ function CircularProgress({ value, max, size = 104, strokeWidth = 9 }) {
 
   return (
     <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-      <circle cx={size / 2} cy={size / 2} r={radius}
+      <circle cx={size/2} cy={size/2} r={radius}
         fill="none" stroke="#e0e0e0" strokeWidth={strokeWidth} />
-      <circle cx={size / 2} cy={size / 2} r={radius}
-        fill="none"
-        stroke={color}
-        strokeWidth={strokeWidth}
-        strokeDasharray={circumference}
-        strokeDashoffset={offset}
+      <circle cx={size/2} cy={size/2} r={radius}
+        fill="none" stroke={color} strokeWidth={strokeWidth}
+        strokeDasharray={circumference} strokeDashoffset={offset}
         strokeLinecap="round"
         style={{ transition: 'stroke-dashoffset 0.6s ease' }}
       />
@@ -27,12 +25,12 @@ function CircularProgress({ value, max, size = 104, strokeWidth = 9 }) {
   );
 }
 
-// ── Helpers ─────────────────────────────────────────────────────────────────
+// ── Helpers ──────────────────────────────────────────────────────────────────
 function gradeLabel(pct) {
   if (pct === null) return 'Not Graded';
-  if (pct >= 90)   return 'Excellent';
-  if (pct >= 75)   return 'Good';
-  if (pct >= 60)   return 'Satisfactory';
+  if (pct >= 90) return 'Excellent';
+  if (pct >= 75) return 'Good';
+  if (pct >= 60) return 'Satisfactory';
   return 'Needs Improvement';
 }
 
@@ -41,6 +39,16 @@ function formatDate(iso) {
   return new Date(iso).toLocaleDateString('en-GB', {
     day: 'numeric', month: 'short', year: 'numeric',
   });
+}
+
+// Convert ai_score (0–1) into human-readable feedback
+function aiFeedbackText(aiScore) {
+  if (aiScore === null || aiScore === undefined) return null;
+  const pct = Math.round(aiScore * 100);
+  if (pct >= 85) return `Strong answer — AI found ${pct}% similarity to the reference.`;
+  if (pct >= 65) return `Good attempt — AI found ${pct}% similarity. Review the reference answer to fill gaps.`;
+  if (pct >= 45) return `Partial credit — AI matched ${pct}%. Key concepts may be missing or underdeveloped.`;
+  return `Low similarity (${pct}%) — the answer diverges from the reference. Consider reviewing this topic.`;
 }
 
 // ── Component ────────────────────────────────────────────────────────────────
@@ -54,13 +62,10 @@ function ResultDetail({ submission, onNavigate }) {
 
     const { data, error } = await supabase
       .from('answers')
-      .select('id, answer_text, marks_awarded, questions ( id, text, marks, order_index )')
+      .select('id, answer_text, marks_awarded, ai_score, questions(id, text, marks, sample_answer, order_index)')
       .eq('submission_id', submission.id);
 
-    if (error || !data) {
-      setLoading(false);
-      return;
-    }
+    if (error || !data) { setLoading(false); return; }
 
     setAnswers(
       [...data].sort((a, b) => (a.questions?.order_index ?? 0) - (b.questions?.order_index ?? 0))
@@ -70,7 +75,7 @@ function ResultDetail({ submission, onNavigate }) {
 
   useEffect(() => { fetchAnswers(); }, [fetchAnswers]);
 
-  // ── Guard ──────────────────────────────────────────────────────────────────
+  // Guard
   if (!submission) {
     return (
       <div className="rd-page">
@@ -82,12 +87,14 @@ function ResultDetail({ submission, onNavigate }) {
     );
   }
 
-  // ── Derived totals ─────────────────────────────────────────────────────────
+  // Derived totals
   const totalMarks   = answers.reduce((sum, a) => sum + (a.questions?.marks ?? 0), 0);
   const awardedMarks = answers.reduce((sum, a) => sum + (a.marks_awarded ?? 0), 0);
   const pct          = submission.status === 'Graded' && totalMarks > 0
     ? Math.round((awardedMarks / totalMarks) * 100)
     : null;
+
+  const hasAiScores = answers.some(a => a.ai_score !== null);
 
   return (
     <div className="rd-page">
@@ -103,7 +110,6 @@ function ResultDetail({ submission, onNavigate }) {
         </nav>
       </div>
 
-      {/* Body */}
       <div className="rd-body">
 
         {/* Title row */}
@@ -124,49 +130,33 @@ function ResultDetail({ submission, onNavigate }) {
         <div className="rd-metrics-row">
           <div className="rd-metric-card">
             <div className="rd-metric-label">Questions</div>
-            <div className="rd-metric-value rd-metric-dark">
-              {loading ? '—' : answers.length}
-            </div>
+            <div className="rd-metric-value rd-metric-dark">{loading ? '—' : answers.length}</div>
             <div className="rd-metric-sub">in this submission</div>
           </div>
-
           <div className="rd-metric-card">
             <div className="rd-metric-label">Total Marks</div>
-            <div className="rd-metric-value rd-metric-dark">
-              {loading ? '—' : totalMarks}
-            </div>
+            <div className="rd-metric-value rd-metric-dark">{loading ? '—' : totalMarks}</div>
             <div className="rd-metric-sub">available</div>
           </div>
-
           <div className="rd-metric-card">
             <div className="rd-metric-label">Your Score</div>
-            <div
-              className="rd-metric-value"
-              style={{
-                color: pct !== null
-                  ? (pct >= 75 ? '#10b981' : pct >= 50 ? '#f59e0b' : '#ef4444')
-                  : '#bbb',
-              }}
-            >
+            <div className="rd-metric-value"
+              style={{ color: pct !== null ? (pct >= 75 ? '#10b981' : pct >= 50 ? '#f59e0b' : '#ef4444') : '#bbb' }}>
               {pct !== null ? awardedMarks : '—'}
             </div>
-            <div className="rd-metric-sub">
-              {pct !== null ? `${pct}% score` : 'pending review'}
-            </div>
+            <div className="rd-metric-sub">{pct !== null ? `${pct}% score` : 'pending review'}</div>
           </div>
-
           <div className="rd-metric-card">
             <div className="rd-metric-label">Grade</div>
             <div className={`rd-metric-value ${pct !== null && pct >= 60 ? 'rd-metric-pass' : pct !== null ? 'rd-metric-fail' : 'rd-metric-dark'}`}
-              style={{ fontSize: pct !== null ? 18 : 28 }}
-            >
+              style={{ fontSize: pct !== null ? 18 : 28 }}>
               {gradeLabel(pct)}
             </div>
             <div className="rd-metric-sub">performance</div>
           </div>
         </div>
 
-        {/* Main 2-column layout */}
+        {/* Main layout */}
         {loading ? (
           <div className="rd-loading">Loading your answers…</div>
         ) : (
@@ -177,7 +167,7 @@ function ResultDetail({ submission, onNavigate }) {
               {submission.status !== 'Graded' ? (
                 <div className="rd-section-card rd-pending-card">
                   <p className="rd-pending-text">
-                    Your submission is pending review. Your score and breakdown will appear here once your lecturer has graded it.
+                    Your submission is pending review. Your score will appear here once graded.
                   </p>
                 </div>
               ) : answers.length === 0 ? (
@@ -186,14 +176,14 @@ function ResultDetail({ submission, onNavigate }) {
                 </div>
               ) : (
                 answers.map((a, idx) => {
-                  const maxMarks  = a.questions?.marks ?? 0;
-                  const awarded   = a.marks_awarded ?? 0;
-                  const qPct      = maxMarks > 0 ? awarded / maxMarks : 0;
+                  const maxMarks   = a.questions?.marks ?? 0;
+                  const awarded    = a.marks_awarded ?? 0;
+                  const qPct       = maxMarks > 0 ? awarded / maxMarks : 0;
                   const scoreColor = qPct >= 0.75 ? '#10b981' : qPct >= 0.5 ? '#f59e0b' : '#ef4444';
+                  const feedback   = aiFeedbackText(a.ai_score);
 
                   return (
                     <div key={a.id} className="rd-section-card">
-
                       {/* Question header */}
                       <div className="rd-q-header">
                         <span className="rd-q-label">Question {idx + 1}</span>
@@ -205,6 +195,14 @@ function ResultDetail({ submission, onNavigate }) {
                       {/* Question text */}
                       <p className="rd-q-text">{a.questions?.text ?? '—'}</p>
 
+                      {/* Reference answer */}
+                      {a.questions?.sample_answer && (
+                        <div className="rd-reference-box">
+                          <div className="rd-reference-label">Reference Answer</div>
+                          <p className="rd-reference-text">{a.questions.sample_answer}</p>
+                        </div>
+                      )}
+
                       {/* Student answer */}
                       <div className="rd-answer-section-label">Your Answer</div>
                       <div className="rd-answer-box">
@@ -214,19 +212,24 @@ function ResultDetail({ submission, onNavigate }) {
                         }
                       </div>
 
+                      {/* AI feedback */}
+                      {feedback && (
+                        <div className="rd-ai-feedback">
+                          <span className="rd-ai-icon">🤖</span>
+                          <p>{feedback}</p>
+                        </div>
+                      )}
+
                       {/* Score bar */}
                       <div className="rd-score-bar-row">
                         <div className="rd-score-bar-track">
-                          <div
-                            className="rd-score-bar-fill"
-                            style={{ width: `${qPct * 100}%`, background: scoreColor }}
-                          />
+                          <div className="rd-score-bar-fill"
+                            style={{ width: `${qPct * 100}%`, background: scoreColor }} />
                         </div>
                         <span className="rd-score-bar-pct" style={{ color: scoreColor }}>
                           {Math.round(qPct * 100)}%
                         </span>
                       </div>
-
                     </div>
                   );
                 })
@@ -235,8 +238,7 @@ function ResultDetail({ submission, onNavigate }) {
 
             {/* Right: sidebar */}
             <aside className="rd-sidebar">
-
-              {/* Overall grade ring */}
+              {/* Grade ring */}
               <div className="rd-side-card">
                 <div className="rd-grade-header">Overall Grade</div>
                 <div className="rd-score-circle-wrap">
@@ -264,11 +266,11 @@ function ResultDetail({ submission, onNavigate }) {
               {/* Submission info */}
               <div className="rd-side-card">
                 {[
-                  { label: 'Assessment', value: submission.title                       },
-                  { label: 'Topic',      value: submission.topic || 'No topic'         },
-                  { label: 'Status',     value: submission.status                      },
-                  { label: 'Submitted',  value: formatDate(submission.submittedAt)     },
-                  { label: 'Max Marks',  value: `${totalMarks} marks`                 },
+                  { label: 'Assessment', value: submission.title },
+                  { label: 'Topic',      value: submission.topic || 'No topic' },
+                  { label: 'Status',     value: submission.status },
+                  { label: 'Submitted',  value: formatDate(submission.submittedAt) },
+                  { label: 'Max Marks',  value: `${totalMarks} marks` },
                 ].map(row => (
                   <div key={row.label} className="rd-info-row">
                     <span className="rd-info-label">{row.label}</span>
@@ -277,10 +279,32 @@ function ResultDetail({ submission, onNavigate }) {
                 ))}
               </div>
 
+              {/* AI Analysis sidebar — only when graded and ai_score data exists */}
+              {submission.status === 'Graded' && hasAiScores && (
+                <div className="rd-side-card">
+                  <div className="rd-grade-header">AI Analysis</div>
+                  <div className="rd-ai-sidebar-list">
+                    {answers.map((a, idx) => {
+                      if (a.ai_score === null) return null;
+                      const pctA  = Math.round(a.ai_score * 100);
+                      const color = pctA >= 75 ? '#10b981' : pctA >= 50 ? '#f59e0b' : '#ef4444';
+                      return (
+                        <div key={a.id} className="rd-ai-sidebar-row">
+                          <span className="rd-ai-sidebar-q">Q{idx + 1}</span>
+                          <div className="rd-ai-sidebar-track">
+                            <div className="rd-ai-sidebar-fill" style={{ width: `${pctA}%`, background: color }} />
+                          </div>
+                          <span className="rd-ai-sidebar-pct">{pctA}%</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className="rd-ai-sidebar-note">AI similarity to reference answers</p>
+                </div>
+              )}
             </aside>
           </div>
         )}
-
       </div>
     </div>
   );

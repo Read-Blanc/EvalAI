@@ -384,3 +384,106 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+
+
+/* Append to existing ResultDetail.css */
+
+.rd-reference-box {
+  background: #f5f7fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin: 12px 0;
+}
+
+.rd-reference-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #999;
+  margin-bottom: 5px;
+}
+
+.rd-reference-text {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* AI feedback row */
+.rd-ai-feedback {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin: 10px 0;
+}
+
+.rd-ai-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.rd-ai-feedback p {
+  font-size: 12px;
+  color: #555;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* AI sidebar */
+.rd-ai-sidebar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.rd-ai-sidebar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rd-ai-sidebar-q {
+  font-size: 10px;
+  font-weight: 700;
+  color: #999;
+  width: 20px;
+  flex-shrink: 0;
+}
+
+.rd-ai-sidebar-track {
+  flex: 1;
+  height: 6px;
+  background: #f0f0f0;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.rd-ai-sidebar-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.5s ease;
+}
+
+.rd-ai-sidebar-pct {
+  font-size: 10px;
+  font-weight: 600;
+  color: #555;
+  width: 28px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.rd-ai-sidebar-note {
+  font-size: 10px;
+  color: #bbb;
+  margin: 0;
+}

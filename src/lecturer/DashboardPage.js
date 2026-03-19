@@ -1,84 +1,10 @@
-import React from 'react';
+/* eslint-disable no-unused-vars */
+/* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable react-hooks/purity */
+import React, { useState, useEffect, useCallback } from 'react';
 import { useUser } from '../UserContext';
+import { supabase } from '../supabaseClient';
 import './DashboardPage.css';
-
-// ── Mock data ──────────────────────────────────────────────────────────────
-const STATS = [
-  {
-    label:     'Total Questions',
-    value:     '48',
-    delta:     '+3 this week',
-    deltaType: 'up',
-    icon:      '?',
-    accent:    'linear-gradient(90deg,#667eea,#764ba2)',
-  },
-  {
-    label:     'Pending Scripts',
-    value:     '12',
-    delta:     '4 flagged for review',
-    deltaType: 'down',
-    icon:      '⏳',
-    accent:    '#f59e0b',
-  },
-  {
-    label:     'Avg. Score',
-    value:     '74%',
-    delta:     '+2% vs last batch',
-    deltaType: 'up',
-    icon:      '📊',
-    accent:    '#10b981',
-  },
-  {
-    label:     'Active Assessments',
-    value:     '3',
-    delta:     '1 closing this week',
-    deltaType: null,
-    icon:      '📋',
-    accent:    '#3b82f6',
-  },
-];
-
-const QUEUE_SNAPSHOT = [
-  { id: 88201, student: 'Alex Chen',  initials: 'AC', assessment: 'CS-401 Midterm',    score: 0.89, status: 'Auto-graded',  color: '#667eea' },
-  { id: 88202, student: 'Jamie Lee',  initials: 'JL', assessment: 'CS-401 Midterm',    score: 0.71, status: 'Needs Review', color: '#f59e0b' },
-  { id: 88203, student: 'Sam Osei',   initials: 'SO', assessment: 'CS-301 Quiz 2',     score: 0.55, status: 'Needs Review', color: '#ef4444' },
-  { id: 88204, student: 'Priya Nair', initials: 'PN', assessment: 'CS-401 Midterm',    score: 0.93, status: 'Auto-graded',  color: '#10b981' },
-  { id: 88205, student: 'Tom Blake',  initials: 'TB', assessment: 'CS-501 Assignment', score: 0.82, status: 'Auto-graded',  color: '#764ba2' },
-];
-
-const ACTIVITY = [
-  { color: '#667eea', text: 'Alex Chen submitted an answer for CS-401 Midterm',       bold: 'Alex Chen',         time: '2 min ago'  },
-  { color: '#10b981', text: '12 scripts auto-graded in CS-301 Quiz 2',                bold: '12 scripts',        time: '18 min ago' },
-  { color: '#3b82f6', text: 'New question added to CS-501 Assignment',                bold: 'CS-501 Assignment',  time: '1 hr ago'   },
-  { color: '#f59e0b', text: 'Grade overridden for Sam Osei — CS-301 Quiz 2',          bold: 'Sam Osei',           time: '3 hrs ago'  },
-  { color: '#667eea', text: '28 students submitted answers to CS-201 Final',           bold: '28 students',        time: 'Yesterday'  },
-  { color: '#10b981', text: 'Assessment CS-401 Quiz 1 moved to Closed',               bold: 'CS-401 Quiz 1',      time: 'Yesterday'  },
-];
-
-const SCORE_DIST = [
-  { label: '90–100%', fill: 'linear-gradient(90deg,#10b981,#6ee7b7)', pct: 28, count: 14 },
-  { label: '80–89%',  fill: 'linear-gradient(90deg,#667eea,#764ba2)', pct: 42, count: 21 },
-  { label: '70–79%',  fill: 'linear-gradient(90deg,#3b82f6,#60a5fa)', pct: 20, count: 10 },
-  { label: '60–69%',  fill: '#f59e0b',                                pct: 6,  count: 3  },
-  { label: '< 60%',   fill: '#ef4444',                                pct: 4,  count: 2  },
-];
-
-// ── Helpers ────────────────────────────────────────────────────────────────
-function scoreClass(s) {
-  if (s >= 0.85) return 'dash-score-high';
-  if (s >= 0.65) return 'dash-score-mid';
-  return 'dash-score-low';
-}
-
-function statusChip(status) {
-  const map = {
-    'Auto-graded':  'dash-chip-ai',
-    'Needs Review': 'dash-chip-pending',
-    'Approved':     'dash-chip-reviewed',
-    'Flagged':      'dash-chip-flagged',
-  };
-  return map[status] ?? 'dash-chip-ai';
-}
 
 function greeting() {
   const h = new Date().getHours();
@@ -91,48 +17,345 @@ const today = new Date().toLocaleDateString('en-GB', {
   weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
 });
 
-// Highlight a substring in bold inside an activity text string
-function ActivityText({ text, bold }) {
-  const idx = text.indexOf(bold);
-  if (idx === -1) return <span>{text}</span>;
+function timeAgo(iso) {
+  const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+  if (diff < 60)    return 'Just now';
+  if (diff < 3600)  return `${Math.floor(diff / 60)} min ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  return `${Math.floor(diff / 86400)}d ago`;
+}
+
+function initials(n = '') {
+  return n.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase() || '??';
+}
+
+// Tiny sparkline SVG for submission trend
+function Sparkline({ values }) {
+  if (!values?.length || values.every(v => v === 0)) return null;
+  const max = Math.max(...values, 1);
+  const W = 72, H = 24;
+  const pts = values.map((v, i) => {
+    const x = (i / (values.length - 1)) * W;
+    const y = H - (v / max) * H;
+    return `${x},${y}`;
+  }).join(' ');
   return (
-    <span>
-      {text.slice(0, idx)}
-      <strong>{bold}</strong>
-      {text.slice(idx + bold.length)}
-    </span>
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
+      <polyline points={pts} fill="none" stroke="#9ca3af" strokeWidth="1.5"
+        strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }
 
-// ── Component ──────────────────────────────────────────────────────────────
-function DashboardPage({ onNavigate }) {
+function Skeleton({ style = {} }) {
+  return <div className="dash-skeleton" style={style} />;
+}
+
+// Inline notifications panel
+function NotificationsPanel({ notifications, unreadCount, markRead, markAllRead, clearAll, onNavigate }) {
+  const timeAgoShort = (ts) => {
+    const s = Math.floor((Date.now() - ts) / 1000);
+    if (s < 60)    return 'now';
+    if (s < 3600)  return `${Math.floor(s / 60)}m`;
+    if (s < 86400) return `${Math.floor(s / 3600)}h`;
+    return `${Math.floor(s / 86400)}d`;
+  };
+
+  const handleClick = (n) => {
+    markRead(n.id);
+    if (n.href) onNavigate(n.href.replace('/', '').replace('/', '-'));
+  };
+
+  return (
+    <div className="dash-card">
+      <div className="dash-card-header">
+        <div>
+          <div className="dash-card-title">
+            Notifications
+            {unreadCount > 0 && (
+              <span className="dash-notif-count">{unreadCount > 9 ? '9+' : unreadCount}</span>
+            )}
+          </div>
+        </div>
+        {notifications.length > 0 && (
+          <button className="dash-card-action" onClick={clearAll}>Clear all</button>
+        )}
+      </div>
+
+      <div className="dash-notif-list">
+        {notifications.length === 0 ? (
+          <div className="dash-notif-empty">
+            <span>🔔</span>
+            <p>No notifications yet</p>
+          </div>
+        ) : (
+          notifications.slice(0, 8).map(n => (
+            <button
+              key={n.id}
+              onClick={() => handleClick(n)}
+              className={`dash-notif-item ${n.read ? 'dash-notif-read' : ''}`}
+            >
+              <span className="dash-notif-icon">{n.icon}</span>
+              <div className="dash-notif-body">
+                <div className="dash-notif-title">{n.title}</div>
+                <div className="dash-notif-text">{n.body}</div>
+              </div>
+              <div className="dash-notif-meta">
+                <span>{timeAgoShort(n.ts)}</span>
+                {!n.read && <span className="dash-notif-dot" />}
+              </div>
+            </button>
+          ))
+        )}
+      </div>
+
+      {unreadCount > 0 && (
+        <div className="dash-notif-footer">
+          <button onClick={markAllRead} className="dash-card-action">Mark all as read</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Toast for new notification arrivals
+function NotificationToast({ notifications }) {
+  const [queue, setQueue] = useState([]);
+
+  useEffect(() => {
+    if (!notifications.length) return;
+    const newest = notifications[0];
+    if (!newest.read && newest.ts > Date.now() - 500) {
+      setQueue(q => [...q, newest.id]);
+      setTimeout(() => setQueue(q => q.filter(x => x !== newest.id)), 4000);
+    }
+  }, [notifications[0]?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (!queue.length) return null;
+
+  return (
+    <div className="dash-toast-stack">
+      {queue.map(tid => {
+        const n = notifications.find(x => x.id === tid);
+        if (!n) return null;
+        return (
+          <div key={tid} className="dash-toast-notif">
+            <span>{n.icon}</span>
+            <div>
+              <div className="dash-toast-notif-title">{n.title}</div>
+              <div>{n.body}</div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// Notification hook
+function useNotifications(user) {
+  const [notifications, setNotifications] = useState([]);
+  const channelRef = React.useRef(null);
+
+  const add = useCallback((notif) => {
+    setNotifications(prev => [
+      { id: crypto.randomUUID(), ts: Date.now(), read: false, ...notif },
+      ...prev,
+    ].slice(0, 50));
+  }, []);
+
+  useEffect(() => {
+    if (!user?.id || user?.role !== 'lecturer') return;
+
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
+    }
+
+    const channel = supabase.channel(`notifs-lecturer-${user.id}`);
+
+    channel.on('postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'submissions' },
+      async (payload) => {
+        const subId = payload.new?.id;
+        if (!subId) return;
+
+        const { data } = await supabase
+          .from('submissions')
+          .select('profiles(full_name, email), assessments(title, created_by)')
+          .eq('id', subId)
+          .single();
+
+        if (!data || data.assessments?.created_by !== user.id) return;
+
+        const studentName = data.profiles?.full_name || data.profiles?.email || 'A student';
+        const title       = data.assessments?.title ?? 'an assessment';
+
+        add({
+          type: 'new_submission',
+          icon: '📝',
+          title: 'New submission',
+          body: `${studentName} submitted "${title}"`,
+          href: '/lecturer/grading',
+        });
+      }
+    );
+
+    channel.subscribe();
+    channelRef.current = channel;
+
+    return () => {
+      supabase.removeChannel(channel);
+      channelRef.current = null;
+    };
+  }, [user?.id, user?.role, add]);
+
+  const markRead    = useCallback((id) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n)), []);
+  const markAllRead = useCallback(() => setNotifications(prev => prev.map(n => ({ ...n, read: true }))), []);
+  const clearAll    = useCallback(() => setNotifications([]), []);
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  return { notifications, unreadCount, markRead, markAllRead, clearAll };
+}
+
+function scoreClass(s) {
+  if (s >= 0.85) return 'dash-score-high';
+  if (s >= 0.65) return 'dash-score-mid';
+  return 'dash-score-low';
+}
+
+export default function DashboardPage({ onNavigate }) {
   const { user } = useUser();
   const firstName = user?.fullName?.split(' ')[0] ?? user?.email?.split('@')[0] ?? 'there';
-  const pendingCount = QUEUE_SNAPSHOT.filter(i => i.status === 'Needs Review').length;
+
+  const [stats,   setStats]   = useState(null);
+  const [pending, setPending] = useState([]);
+  const [activity,setActivity]= useState([]);
+  const [dist,    setDist]    = useState([]);
+  const [trend,   setTrend]   = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const { notifications, unreadCount, markRead, markAllRead, clearAll } = useNotifications(user);
+
+  const fetchAll = useCallback(async () => {
+    setLoading(true);
+
+    const [{ data: asms }, { data: allSubs }] = await Promise.all([
+      supabase
+        .from('assessments')
+        .select('id, title, status')
+        .eq('created_by', user.id),
+      supabase
+        .from('submissions')
+        .select(`id, status, submitted_at, assessment_id,
+          assessments!inner(created_by, title),
+          profiles(full_name, email),
+          answers(marks_awarded, questions(marks))`)
+        .eq('assessments.created_by', user.id)
+        .order('submitted_at', { ascending: false }),
+    ]);
+
+    const asmList = asms   ?? [];
+    const subList = allSubs ?? [];
+
+    const pendingSubs = subList.filter(s => s.status === 'Pending');
+    const gradedSubs  = subList.filter(s => s.status === 'Graded');
+
+    const scores = gradedSubs.map(s => {
+      const maxM  = s.answers?.reduce((sum, a) => sum + (a.questions?.marks ?? 0), 0) ?? 0;
+      const award = s.answers?.reduce((sum, a) => sum + (a.marks_awarded ?? 0), 0) ?? 0;
+      return maxM > 0 ? Math.round((award / maxM) * 100) : null;
+    }).filter(v => v !== null);
+
+    const avgScore = scores.length
+      ? Math.round(scores.reduce((a, b) => a + b) / scores.length)
+      : null;
+
+    // Score distribution buckets
+    const buckets = [
+      { label: '< 50%',  count: scores.filter(s => s < 50).length },
+      { label: '50–69',  count: scores.filter(s => s >= 50 && s < 70).length },
+      { label: '70–89',  count: scores.filter(s => s >= 70 && s < 90).length },
+      { label: '90+',    count: scores.filter(s => s >= 90).length },
+    ];
+    const maxBucket = Math.max(...buckets.map(b => b.count), 1);
+    setDist(buckets.map(b => ({ ...b, pct: Math.round((b.count / maxBucket) * 100) })));
+
+    // 7-day submission trend
+    const now = Date.now();
+    const trendArr = Array(7).fill(0);
+    subList.forEach(s => {
+      if (!s.submitted_at) return;
+      const diff = Math.floor((now - new Date(s.submitted_at).getTime()) / 86400000);
+      if (diff >= 0 && diff < 7) trendArr[6 - diff]++;
+    });
+    setTrend(trendArr);
+
+    setPending(
+      pendingSubs.slice(0, 5).map(s => {
+        const name = s.profiles?.full_name || s.profiles?.email || 'Unknown';
+        return { id: s.id, student: name, assessment: s.assessments?.title ?? '—', initials: initials(name) };
+      })
+    );
+
+    setActivity(
+      subList.slice(0, 8).map(s => {
+        const name = s.profiles?.full_name || s.profiles?.email || 'Student';
+        const verb = s.status === 'Graded' ? 'graded' : 'submitted';
+        return {
+          text: `${name} ${verb} ${s.assessments?.title ?? 'an assessment'}`,
+          bold: name,
+          time: s.submitted_at ? timeAgo(s.submitted_at) : '—',
+        };
+      })
+    );
+
+    setStats({
+      totalAsm:     asmList.length,
+      activeAsm:    asmList.filter(a => a.status === 'Active').length,
+      pendingCount: pendingSubs.length,
+      avgScore,
+    });
+
+    setLoading(false);
+  }, [user.id]);
+
+  useEffect(() => { fetchAll(); }, [fetchAll]);
+
+  // Realtime: re-fetch when a new submission arrives
+  useEffect(() => {
+    const ch = supabase
+      .channel('dashboard-rt')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'submissions' }, fetchAll)
+      .subscribe();
+    return () => supabase.removeChannel(ch);
+  }, [fetchAll]);
+
+  const STAT_CARDS = [
+    { label: 'Total Assessments', value: stats?.totalAsm,    sub: `${stats?.activeAsm ?? 0} active` },
+    { label: 'Pending Review',    value: stats?.pendingCount, sub: 'awaiting grading' },
+    { label: 'Avg. Class Score',  value: stats?.avgScore != null ? `${stats.avgScore}%` : '—', sub: 'across graded' },
+    { label: 'Submissions (7d)',  value: trend.reduce((a, b) => a + b, 0), sub: 'last 7 days', extra: <Sparkline values={trend} /> },
+  ];
 
   return (
     <div>
-      {/* Sticky topbar */}
+      {/* Topbar */}
       <div className="dash-topbar">
         <div className="dash-breadcrumb">
-          <span>Home</span>
-          <span className="sep">/</span>
-          <span>Dashboard</span>
+          <span>Home</span><span className="sep">/</span><span>Dashboard</span>
         </div>
         <div className="dash-topbar-actions">
-          <button className="dash-notif-btn" title="Notifications">
-            🔔
-            <span className="dash-notif-dot" />
-          </button>
-          <button className="dash-btn-primary" onClick={() => onNavigate('grading')}>
-            Start Grading
+          <button
+            className="dash-btn-primary"
+            onClick={() => onNavigate('grading')}
+          >
+            {loading ? 'Grading Queue' : `Start Grading${stats?.pendingCount ? ` (${stats.pendingCount})` : ''}`}
           </button>
         </div>
       </div>
 
-      {/* Page body */}
       <div className="dash-content">
-
         {/* Welcome */}
         <div className="dash-welcome">
           <div className="dash-welcome-greeting">Good {greeting()}, {firstName}</div>
@@ -142,23 +365,22 @@ function DashboardPage({ onNavigate }) {
 
         {/* Stat cards */}
         <div className="dash-stats-row">
-          {STATS.map((s) => (
+          {STAT_CARDS.map(s => (
             <div key={s.label} className="dash-stat-card">
-              <div className="dash-stat-accent" style={{ background: s.accent }} />
-              <div className="dash-stat-icon">{s.icon}</div>
               <div className="dash-stat-label">{s.label}</div>
-              <div className="dash-stat-value">{s.value}</div>
-              <div className="dash-stat-delta">
-                {s.deltaType === 'up'   && <span className="up">↑ </span>}
-                {s.deltaType === 'down' && <span className="down">↓ </span>}
-                {s.delta}
+              {loading ? <Skeleton style={{ height: 36, width: 64, marginBottom: 6 }} /> : (
+                <div className="dash-stat-value">{s.value ?? '0'}</div>
+              )}
+              <div className="dash-stat-delta-row">
+                <span className="dash-stat-delta">{s.sub}</span>
+                {s.extra && !loading && s.extra}
               </div>
             </div>
           ))}
         </div>
 
-        {/* Main 2-column grid */}
-        <div className="dash-grid-2">
+        {/* Main 3-column row */}
+        <div className="dash-grid-3col">
 
           {/* Grading Queue snapshot */}
           <div className="dash-card">
@@ -167,46 +389,49 @@ function DashboardPage({ onNavigate }) {
                 <div className="dash-card-title">Grading Queue</div>
                 <div className="dash-card-subtitle">Scripts awaiting review</div>
               </div>
-              <a
-                className="dash-card-action"
-                href="#grading"
-                onClick={(e) => { e.preventDefault(); onNavigate('grading'); }}
-              >
+              <a className="dash-card-action" href="#grading"
+                onClick={e => { e.preventDefault(); onNavigate('grading'); }}>
                 View all →
               </a>
             </div>
 
-            {QUEUE_SNAPSHOT.map((item) => (
-              <div
-                key={item.id}
-                className="dash-queue-item"
-                onClick={() => onNavigate('grading')}
-              >
-                <div className="dash-queue-avatar" style={{ background: item.color }}>
-                  {item.initials}
+            {loading ? (
+              [1,2,3].map(i => (
+                <div key={i} className="dash-queue-item">
+                  <Skeleton style={{ width: 36, height: 36, borderRadius: '50%' }} />
+                  <div style={{ flex: 1 }}>
+                    <Skeleton style={{ height: 12, width: '60%', marginBottom: 6 }} />
+                    <Skeleton style={{ height: 10, width: '40%' }} />
+                  </div>
                 </div>
-                <div className="dash-queue-info">
-                  <div className="dash-queue-name">{item.student}</div>
-                  <div className="dash-queue-meta">{item.assessment} · #{item.id}</div>
+              ))
+            ) : pending.length === 0 ? (
+              <div className="dash-empty-state">All caught up — no pending submissions.</div>
+            ) : (
+              <>
+                {pending.map(item => (
+                  <div key={item.id} className="dash-queue-item"
+                    onClick={() => onNavigate('grading-detail', {
+                      id: item.id, status: 'Pending',
+                      assessmentTitle: item.assessment,
+                      studentName: item.student,
+                    })}>
+                    <div className="dash-queue-avatar">{item.initials}</div>
+                    <div className="dash-queue-info">
+                      <div className="dash-queue-name">{item.student}</div>
+                      <div className="dash-queue-meta">{item.assessment}</div>
+                    </div>
+                    <span className="dash-status-chip dash-chip-pending">Pending</span>
+                  </div>
+                ))}
+                <div className="dash-card-footer">
+                  <button className="dash-btn-primary dash-btn-full"
+                    onClick={() => onNavigate('grading')}>
+                    Start Grading ({stats?.pendingCount ?? 0} pending)
+                  </button>
                 </div>
-                <div className={`dash-queue-score ${scoreClass(item.score)}`}>
-                  {item.score.toFixed(2)}
-                </div>
-                <span className={`dash-status-chip ${statusChip(item.status)}`}>
-                  {item.status}
-                </span>
-              </div>
-            ))}
-
-            <div style={{ padding: '14px 20px', borderTop: '1px solid #e0e0e0' }}>
-              <button
-                className="dash-btn-primary"
-                style={{ width: '100%' }}
-                onClick={() => onNavigate('grading')}
-              >
-                Start Grading ({pendingCount} pending)
-              </button>
-            </div>
+              </>
+            )}
           </div>
 
           {/* Recent Activity */}
@@ -214,101 +439,132 @@ function DashboardPage({ onNavigate }) {
             <div className="dash-card-header">
               <div className="dash-card-title">Recent Activity</div>
             </div>
-            {ACTIVITY.map((item, idx) => (
-              <div key={idx} className="dash-activity-item">
-                <div className="dash-activity-dot" style={{ background: item.color }} />
-                <div>
-                  <div className="dash-activity-text">
-                    <ActivityText text={item.text} bold={item.bold} />
+            {loading ? (
+              [1,2,3,4,5].map(i => (
+                <div key={i} className="dash-activity-item">
+                  <Skeleton style={{ width: 8, height: 8, borderRadius: '50%', marginTop: 6 }} />
+                  <div style={{ flex: 1 }}>
+                    <Skeleton style={{ height: 11, width: '80%', marginBottom: 5 }} />
+                    <Skeleton style={{ height: 9, width: '25%' }} />
                   </div>
-                  <div className="dash-activity-time">{item.time}</div>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : activity.length === 0 ? (
+              <div className="dash-empty-state">No activity yet.</div>
+            ) : (
+              activity.map((a, i) => (
+                <div key={i} className="dash-activity-item">
+                  <div className="dash-activity-dot" />
+                  <div>
+                    <div className="dash-activity-text">
+                      <strong>{a.bold}</strong>
+                      {a.text.replace(a.bold, '')}
+                    </div>
+                    <div className="dash-activity-time">{a.time}</div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
+
+          {/* Notifications */}
+          <NotificationsPanel
+            notifications={notifications}
+            unreadCount={unreadCount}
+            markRead={markRead}
+            markAllRead={markAllRead}
+            clearAll={clearAll}
+            onNavigate={onNavigate}
+          />
         </div>
 
-        {/* Bottom row */}
-        <div className="dash-grid-3">
+        {/* Bottom row: Score Distribution + Trend */}
+        <div className="dash-grid-2">
 
-          {/* Score distribution — spans 2 columns */}
-          <div className="dash-card" style={{ gridColumn: 'span 2' }}>
+          <div className="dash-card">
             <div className="dash-card-header">
               <div>
                 <div className="dash-card-title">Score Distribution</div>
-                <div className="dash-card-subtitle">CS-401 Midterm · 50 submissions</div>
+                <div className="dash-card-subtitle">Graded submissions by band</div>
               </div>
             </div>
             <div style={{ padding: '20px' }}>
-              {SCORE_DIST.map((bar) => (
-                <div key={bar.label} className="dash-dist-bar">
-                  <div className="dash-dist-label">{bar.label}</div>
-                  <div className="dash-dist-track">
-                    <div
-                      className="dash-dist-fill"
-                      style={{ width: `${bar.pct}%`, background: bar.fill }}
-                    />
+              {loading ? (
+                [1,2,3,4].map(i => <Skeleton key={i} style={{ height: 20, marginBottom: 12 }} />)
+              ) : dist.every(d => d.count === 0) ? (
+                <div className="dash-empty-state">No graded submissions yet.</div>
+              ) : (
+                dist.map(d => (
+                  <div key={d.label} className="dash-dist-bar">
+                    <div className="dash-dist-label">{d.label}</div>
+                    <div className="dash-dist-track">
+                      <div className="dash-dist-fill" style={{ width: `${d.pct}%` }} />
+                    </div>
+                    <div className="dash-dist-count">{d.count}</div>
                   </div>
-                  <div className="dash-dist-count">{bar.count}</div>
-                </div>
-              ))}
-              <div className="dash-dist-footer">
-                <span>Class average: <strong>76%</strong></span>
-                <span>Highest: <strong>98%</strong></span>
-                <span>Lowest: <strong>44%</strong></span>
-              </div>
+                ))
+              )}
             </div>
           </div>
 
-          {/* Quick actions */}
           <div className="dash-card">
             <div className="dash-card-header">
-              <div className="dash-card-title">Quick Actions</div>
+              <div>
+                <div className="dash-card-title">Submissions — Last 7 Days</div>
+                <div className="dash-card-subtitle">Daily submission count</div>
+              </div>
             </div>
-            <div className="dash-qa-grid">
-              {[
-                { icon: '➕', label: 'New Assessment', desc: 'Create a question',    page: 'assessments' },
-                { icon: '📤', label: 'Upload Scripts',  desc: 'Batch submit answers', page: 'grading'     },
-                { icon: '📐', label: 'Build Rubric',    desc: 'Define mark bands',   page: 'rubrics'     },
-                { icon: '📈', label: 'View Analytics',  desc: 'Scores & trends',     page: 'analytics'   },
-              ].map((qa) => (
-                <button
-                  key={qa.label}
-                  className="dash-qa-btn"
-                  onClick={() => onNavigate(qa.page)}
-                >
-                  <div className="dash-qa-icon" style={{ background: '#f0f0f0' }}>
-                    {qa.icon}
-                  </div>
-                  <div>
-                    <div className="dash-qa-label">{qa.label}</div>
-                    <div className="dash-qa-desc">{qa.desc}</div>
-                  </div>
-                </button>
-              ))}
+            <div className="dash-trend-chart">
+              {loading ? (
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 80 }}>
+                  {[1,2,3,4,5,6,7].map(i => (
+                    <Skeleton key={i} style={{ flex: 1, height: `${20 + i * 8}px` }} />
+                  ))}
+                </div>
+              ) : (
+                <div className="dash-bar-chart">
+                  {trend.map((v, i) => {
+                    const max = Math.max(...trend, 1);
+                    const h   = Math.max((v / max) * 80, v > 0 ? 8 : 2);
+                    const days = ['M','T','W','T','F','S','S'];
+                    const day  = days[new Date(Date.now() - (6 - i) * 86400000).getDay()];
+                    return (
+                      <div key={i} className="dash-bar-col">
+                        <div className="dash-bar" style={{ height: `${h}px` }} />
+                        <span className="dash-bar-label">{day}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Tip banner */}
-        <div className="dash-tip-card">
-          <div className="dash-tip-title">Tip — Bulk Approve High-Confidence Scripts</div>
-          <div className="dash-tip-body">
-            EvalAI flagged <strong>34 scripts</strong> with an SBERT confidence score above 0.90.
-            You can bulk-approve these in the Grading Queue to save time while keeping manual
-            control over borderline submissions.
+        {/* Quick Actions */}
+        <div className="dash-card" style={{ marginTop: 16 }}>
+          <div className="dash-card-header">
+            <div className="dash-card-title">Quick Actions</div>
           </div>
-          <div className="dash-tip-actions">
-            <button className="dash-btn-white" onClick={() => onNavigate('grading')}>
-              Go to Grading Queue
-            </button>
-            <button className="dash-btn-outline-white">Dismiss</button>
+          <div className="dash-qa-grid">
+            {[
+              { icon: '➕', label: 'New Assessment', desc: 'Create a question',  page: 'assessments' },
+              { icon: '📈', label: 'View Analytics',  desc: 'Scores & trends',   page: 'analytics'   },
+              { icon: '⚙️', label: 'Settings',        desc: 'Account & prefs',   page: 'settings'    },
+            ].map(qa => (
+              <button key={qa.label} className="dash-qa-btn" onClick={() => onNavigate(qa.page)}>
+                <div className="dash-qa-icon">{qa.icon}</div>
+                <div>
+                  <div className="dash-qa-label">{qa.label}</div>
+                  <div className="dash-qa-desc">{qa.desc}</div>
+                </div>
+              </button>
+            ))}
           </div>
         </div>
-
       </div>
+
+      <NotificationToast notifications={notifications} />
     </div>
   );
 }
-
-export default DashboardPage;
