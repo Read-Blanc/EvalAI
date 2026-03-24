@@ -1,18 +1,26 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// sentence-transformers/all-MiniLM-L6-v2 — fast, accurate semantic similarity
+// router.huggingface.co is the current supported endpoint
 const HF_MODEL_URL =
-  "https://router.huggingface.co/hf-inference/models/sentence-transformers/all-MiniLM-L6-v2/pipeline/sentence-similarity";
+  "https://router.huggingface.co/hf-inference/models/sentence-transformers/all-MiniLM-L6-v2/pipeline/feature-extraction";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+// Compute cosine similarity between two vectors
+function cosineSimilarity(a: number[], b: number[]): number {
+  const dot = a.reduce((sum, v, i) => sum + v * b[i], 0);
+  const magA = Math.sqrt(a.reduce((sum, v) => sum + v * v, 0));
+  const magB = Math.sqrt(b.reduce((sum, v) => sum + v * v, 0));
+  return magA && magB ? dot / (magA * magB) : 0;
+}
+
 serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -23,87 +31,139 @@ serve(async (req) => {
     if (!submission_id) {
       return new Response(
         JSON.stringify({ error: "submission_id is required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
-    // Use service role key so we can read/write all rows regardless of RLS
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
 
     const hfKey = Deno.env.get("HUGGINGFACE_API_KEY") ?? "";
 
-    // Fetch all answers for the submission, joined with question details
+    // Step 1: Fetch answers
     const { data: answers, error: fetchErr } = await supabase
       .from("answers")
-      .select("id, answer_text, questions(marks, sample_answer)")
+      .select("id, answer_text, question_id")
       .eq("submission_id", submission_id);
 
     if (fetchErr || !answers) {
       return new Response(
-        JSON.stringify({ error: "Failed to fetch answers", detail: fetchErr?.message }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({
+          error: "Failed to fetch answers",
+          detail: fetchErr?.message,
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
-    // Score all answers in parallel — avoids sequential cold-start timeouts
-    const results = await Promise.all(answers.map(async (answer) => {
-      const sampleAnswer = answer.questions?.sample_answer;
-      const answerText   = answer.answer_text;
+    console.log(
+      `Found ${answers.length} answers for submission ${submission_id}`,
+    );
 
-      // Skip if either side is empty — cannot compute similarity
-      if (!sampleAnswer?.trim() || !answerText?.trim()) {
-        return { id: answer.id, ai_score: null };
+    // Step 2: Fetch questions separately
+    const questionIds = answers.map((a) => a.question_id).filter(Boolean);
+    const { data: questions, error: qErr } = await supabase
+      .from("questions")
+      .select("id, marks, sample_answer")
+      .in("id", questionIds);
+
+    if (qErr) console.error("Failed to fetch questions:", qErr.message);
+
+    const qLookup = {};
+    (questions ?? []).forEach((q) => {
+      qLookup[q.id] = q;
+    });
+
+    // Step 3: Score each answer using feature-extraction + cosine similarity
+    const results = [];
+
+    for (const answer of answers) {
+      const question = qLookup[answer.question_id];
+      const sampleAnswer = question?.sample_answer ?? "";
+      const answerText = answer.answer_text ?? "";
+
+      if (!sampleAnswer.trim() || !answerText.trim()) {
+        console.log(`Skipping answer ${answer.id} — empty text or sample`);
+        results.push({ id: answer.id, ai_score: null });
+        continue;
       }
 
-      // Call HuggingFace Inference API
-      const hfRes = await fetch(HF_MODEL_URL, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${hfKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          inputs: {
-            source_sentence: answerText,
-            sentences: [sampleAnswer],
+      try {
+        // Get embeddings for both texts in one request
+        const hfRes = await fetch(HF_MODEL_URL, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${hfKey}`,
+            "Content-Type": "application/json",
           },
-          // wait_for_model prevents 503 when the model is cold-starting
-          options: { wait_for_model: true },
-        }),
-      });
+          body: JSON.stringify({
+            inputs: [answerText, sampleAnswer],
+            options: { wait_for_model: true },
+          }),
+        });
 
-      if (!hfRes.ok) {
-        const errText = await hfRes.text();
-        console.error(`HuggingFace error for answer ${answer.id}:`, errText);
-        return { id: answer.id, ai_score: null };
+        const responseText = await hfRes.text();
+        console.log(
+          `HF status ${hfRes.status} for answer ${answer.id}:`,
+          responseText.slice(0, 200),
+        );
+
+        if (!hfRes.ok) {
+          results.push({ id: answer.id, ai_score: null });
+          continue;
+        }
+
+        const embeddings = JSON.parse(responseText);
+
+        // embeddings is [[...vec1...], [...vec2...]]
+        let similarity: number | null = null;
+        if (Array.isArray(embeddings) && embeddings.length === 2) {
+          const vec1 = embeddings[0];
+          const vec2 = embeddings[1];
+          if (Array.isArray(vec1) && Array.isArray(vec2)) {
+            const raw = cosineSimilarity(vec1, vec2);
+            similarity = Math.max(0, Math.min(1, raw));
+          }
+        }
+
+        console.log(`Similarity for answer ${answer.id}: ${similarity}`);
+
+        if (similarity !== null) {
+          const { error: updateErr } = await supabase
+            .from("answers")
+            .update({ ai_score: similarity })
+            .eq("id", answer.id);
+
+          if (updateErr) {
+            console.error(`Update failed for ${answer.id}:`, updateErr.message);
+          } else {
+            console.log(`Saved ai_score ${similarity} for answer ${answer.id}`);
+          }
+        }
+
+        results.push({ id: answer.id, ai_score: similarity });
+      } catch (e) {
+        console.error(`Exception for answer ${answer.id}:`, e);
+        results.push({ id: answer.id, ai_score: null });
       }
-
-      // Response is an array of cosine similarities, e.g. [0.847]
-      const scores     = await hfRes.json();
-      const raw        = Array.isArray(scores) ? scores[0] : null;
-      const similarity = typeof raw === "number" ? Math.max(0, Math.min(1, raw)) : null;
-
-      // Persist the score
-      if (similarity !== null) {
-        await supabase
-          .from("answers")
-          .update({ ai_score: similarity })
-          .eq("id", answer.id);
-      }
-
-      return { id: answer.id, ai_score: similarity };
-    }));
+    }
 
     return new Response(JSON.stringify({ results }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
-    return new Response(
-      JSON.stringify({ error: err.message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    console.error("Top-level error:", err);
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });

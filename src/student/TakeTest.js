@@ -1,33 +1,36 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { supabase } from '../supabaseClient';
-import { useUser } from '../UserContext';
-import './TakeTest.css';
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { supabase } from "../supabaseClient";
+import { useUser } from "../UserContext";
+import "./TakeTest.css";
 
 function formatTime(s) {
-  if (s <= 0) return '00:00';
-  return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+  if (s <= 0) return "00:00";
+  return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 }
 
 function TakeTest({ assessment, onNavigate }) {
   const { user } = useUser();
 
-  const [questions,        setQuestions]        = useState([]);
-  const [answers,          setAnswers]          = useState({});
-  const [currentIdx,       setCurrentIdx]       = useState(0);
-  const [loading,          setLoading]          = useState(true);
-  const [submitting,       setSubmitting]       = useState(false);
-  const [submitted,        setSubmitted]        = useState(false);
+  const [questions, setQuestions] = useState([]);
+  const [answers, setAnswers] = useState({});
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const [alreadySubmitted, setAlreadySubmitted] = useState(false);
-  const [error,            setError]            = useState('');
-  const [showConfirm,      setShowConfirm]      = useState(false);
-  const [timeLeft,         setTimeLeft]         = useState(null);
-  const [totalTime,        setTotalTime]        = useState(null);
-  const [timedOut,         setTimedOut]         = useState(false);
-  const timerRef      = useRef(null);
+  const [error, setError] = useState("");
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(null);
+  const [totalTime, setTotalTime] = useState(null);
+  const [timedOut, setTimedOut] = useState(false);
+  const timerRef = useRef(null);
   const autoSubmitRef = useRef(false);
 
   useEffect(() => {
-    if (!assessment) { onNavigate('student-assessments'); return; }
+    if (!assessment) {
+      onNavigate("student-assessments");
+      return;
+    }
     loadAssessment();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -36,30 +39,36 @@ function TakeTest({ assessment, onNavigate }) {
 
     // Check for existing submission
     const { data: existing } = await supabase
-      .from('submissions')
-      .select('id')
-      .eq('assessment_id', assessment.id)
-      .eq('student_id', user.id)
+      .from("submissions")
+      .select("id")
+      .eq("assessment_id", assessment.id)
+      .eq("student_id", user.id)
       .maybeSingle();
 
-    if (existing) { setAlreadySubmitted(true); setLoading(false); return; }
+    if (existing) {
+      setAlreadySubmitted(true);
+      setLoading(false);
+      return;
+    }
 
     // Load questions
     const { data, error: qErr } = await supabase
-      .from('questions')
-      .select('id, text, marks, answer_length, order_index')
-      .eq('assessment_id', assessment.id)
-      .order('order_index', { ascending: true });
+      .from("questions")
+      .select("id, text, marks, answer_length, order_index")
+      .eq("assessment_id", assessment.id)
+      .order("order_index", { ascending: true });
 
     if (qErr || !data || data.length === 0) {
-      setError('Failed to load questions. Please try again.');
+      setError("Failed to load questions. Please try again.");
       setLoading(false);
       return;
     }
 
     setQuestions(data);
     const init = {};
-    data.forEach(q => { init[q.id] = ''; });
+    data.forEach((q) => {
+      init[q.id] = "";
+    });
     setAnswers(init);
 
     // Set up timer if assessment has a duration
@@ -70,7 +79,9 @@ function TakeTest({ assessment, onNavigate }) {
       const key = `evalai_timer_${assessment.id}_${user.id}`;
       const saved = sessionStorage.getItem(key);
       if (saved) {
-        const elapsed = Math.floor((Date.now() - JSON.parse(saved).startTime) / 1000);
+        const elapsed = Math.floor(
+          (Date.now() - JSON.parse(saved).startTime) / 1000,
+        );
         const rem = Math.max(0, secs - elapsed);
         setTimeLeft(rem);
         if (rem === 0) setTimedOut(true);
@@ -94,108 +105,168 @@ function TakeTest({ assessment, onNavigate }) {
       }
       return;
     }
-    timerRef.current = setTimeout(() => setTimeLeft(p => p - 1), 1000);
+    timerRef.current = setTimeout(() => setTimeLeft((p) => p - 1), 1000);
     return () => clearTimeout(timerRef.current);
   }, [timeLeft, submitted, alreadySubmitted]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleSubmit = useCallback(async (isAuto = false) => {
-    if (submitting) return;
-    setSubmitting(true);
-    setShowConfirm(false);
-    try {
-      const { data: sub, error: subErr } = await supabase
-        .from('submissions')
-        .insert({ assessment_id: assessment.id, student_id: user.id, status: 'Pending' })
-        .select()
-        .single();
-      if (subErr) throw subErr;
+  // Replace the handleSubmit function in src/student/TakeTest.js with this:
 
-      const { error: ansErr } = await supabase
-        .from('answers')
-        .insert(questions.map(q => ({
-          submission_id: sub.id,
-          question_id:   q.id,
-          answer_text:   answers[q.id] ?? '',
-        })));
-      if (ansErr) throw ansErr;
+  const handleSubmit = useCallback(
+    async (isAuto = false) => {
+      if (submitting) return;
+      setSubmitting(true);
+      setShowConfirm(false);
 
-      sessionStorage.removeItem(`evalai_timer_${assessment.id}_${user.id}`);
-      setSubmitted(true);
-      if (isAuto) setTimedOut(false);
-    } catch {
-      setError('Submission failed. Please try again.');
-    } finally {
-      setSubmitting(false);
-    }
-  }, [submitting, assessment, user.id, questions, answers]);
+      try {
+        // Server-side time limit check before accepting submission
+        if (assessment.duration_minutes && !isAuto) {
+          const key = `evalai_timer_${assessment.id}_${user.id}`;
+          const saved = sessionStorage.getItem(key);
+          const startedAt = saved ? JSON.parse(saved).startTime : Date.now();
 
-  const answeredCount   = questions.filter(q => answers[q.id]?.trim()).length;
+          const { data: check, error: checkErr } =
+            await supabase.functions.invoke("check-time-limit", {
+              body: {
+                assessment_id: assessment.id,
+                student_id: user.id,
+                started_at: new Date(startedAt).toISOString(),
+              },
+            });
+
+          if (
+            !checkErr &&
+            check &&
+            !check.allowed &&
+            check.reason !== "Already submitted"
+          ) {
+            setError(
+              `Submission rejected: ${check.reason}. Please contact your lecturer.`,
+            );
+            setSubmitting(false);
+            return;
+          }
+        }
+
+        const { data: sub, error: subErr } = await supabase
+          .from("submissions")
+          .insert({
+            assessment_id: assessment.id,
+            student_id: user.id,
+            status: "Pending",
+          })
+          .select()
+          .single();
+        if (subErr) throw subErr;
+
+        const { error: ansErr } = await supabase.from("answers").insert(
+          questions.map((q) => ({
+            submission_id: sub.id,
+            question_id: q.id,
+            answer_text: answers[q.id] ?? "",
+          })),
+        );
+        if (ansErr) throw ansErr;
+
+        sessionStorage.removeItem(`evalai_timer_${assessment.id}_${user.id}`);
+        setSubmitted(true);
+        if (isAuto) setTimedOut(false);
+      } catch (e) {
+        console.error("Submission error:", e);
+        setError("Submission failed. Please try again.");
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    [submitting, assessment, user.id, questions, answers],
+  );
+
+  const answeredCount = questions.filter((q) => answers[q.id]?.trim()).length;
   const unansweredCount = questions.length - answeredCount;
-  const urgent          = timeLeft !== null && totalTime !== null && timeLeft / totalTime <= 0.2;
+  const urgent =
+    timeLeft !== null && totalTime !== null && timeLeft / totalTime <= 0.2;
 
   // ── States ──────────────────────────────────────────────────────────────
-  if (loading) return (
-    <div className="tt-page">
-      <div className="tt-center-message">
-        <div className="tt-spinner" />
-        <span>Loading assessment…</span>
-      </div>
-    </div>
-  );
-
-  if (error && !submitting) return (
-    <div className="tt-page">
-      <div className="tt-center-message tt-center-message-error">{error}</div>
-    </div>
-  );
-
-  if (alreadySubmitted) return (
-    <div className="tt-page">
-      <div className="tt-done-card">
-        <div className="tt-done-icon">⚠</div>
-        <div className="tt-done-title">Already Submitted</div>
-        <div className="tt-done-sub">
-          You have already submitted this assessment. Results will appear once graded.
+  if (loading)
+    return (
+      <div className="tt-page">
+        <div className="tt-center-message">
+          <div className="tt-spinner" />
+          <span>Loading assessment…</span>
         </div>
-        <button className="tt-btn-primary" onClick={() => onNavigate('results')}>
-          View Results
-        </button>
       </div>
-    </div>
-  );
+    );
 
-  if (submitted) return (
-    <div className="tt-page">
-      <div className="tt-done-card">
-        <div className="tt-done-icon tt-done-icon-success">✓</div>
-        <div className="tt-done-title">Submitted!</div>
-        <div className="tt-done-sub">
-          Your answers have been recorded.
-          <br />
-          <span style={{ fontSize: 12, opacity: 0.7 }}>
-            {answeredCount} of {questions.length} questions answered
-          </span>
+  if (error && !submitting)
+    return (
+      <div className="tt-page">
+        <div className="tt-center-message tt-center-message-error">{error}</div>
+      </div>
+    );
+
+  if (alreadySubmitted)
+    return (
+      <div className="tt-page">
+        <div className="tt-done-card">
+          <div className="tt-done-icon">⚠</div>
+          <div className="tt-done-title">Already Submitted</div>
+          <div className="tt-done-sub">
+            You have already submitted this assessment. Results will appear once
+            graded.
+          </div>
+          <button
+            className="tt-btn-primary"
+            onClick={() => onNavigate("results")}
+          >
+            View Results
+          </button>
         </div>
-        <button className="tt-btn-primary" onClick={() => onNavigate('student-assessments')}>
-          Back to Assessments
-        </button>
       </div>
-    </div>
-  );
+    );
 
-  const q      = questions[currentIdx];
+  if (submitted)
+    return (
+      <div className="tt-page">
+        <div className="tt-done-card">
+          <div className="tt-done-icon tt-done-icon-success">✓</div>
+          <div className="tt-done-title">Submitted!</div>
+          <div className="tt-done-sub">
+            Your answers have been recorded.
+            <br />
+            <span style={{ fontSize: 12, opacity: 0.7 }}>
+              {answeredCount} of {questions.length} questions answered
+            </span>
+          </div>
+          <button
+            className="tt-btn-primary"
+            onClick={() => onNavigate("student-assessments")}
+          >
+            Back to Assessments
+          </button>
+        </div>
+      </div>
+    );
+
+  const q = questions[currentIdx];
   const isLast = currentIdx === questions.length - 1;
-  const rows   = q?.answer_length === 'short' ? 4 : q?.answer_length === 'long' ? 14 : 8;
+  const rows =
+    q?.answer_length === "short" ? 4 : q?.answer_length === "long" ? 14 : 8;
 
   return (
     <div className="tt-page">
       {/* Header */}
       <div className="tt-header">
         <div className="tt-header-left">
-          <button className="tt-back-btn" onClick={() => onNavigate('student-assessments')}>← Back</button>
+          <button
+            className="tt-back-btn"
+            onClick={() => onNavigate("student-assessments")}
+          >
+            ← Back
+          </button>
           <div>
             <div className="tt-header-title">{assessment.title}</div>
-            {assessment.topic && <div className="tt-header-sub">{assessment.topic}</div>}
+            {assessment.topic && (
+              <div className="tt-header-sub">{assessment.topic}</div>
+            )}
           </div>
         </div>
         <div className="tt-header-right">
@@ -204,13 +275,17 @@ function TakeTest({ assessment, onNavigate }) {
           </div>
           {/* Timer */}
           {timeLeft !== null && (
-            <div className={`tt-timer ${urgent ? 'tt-timer-urgent' : ''}`}>
+            <div className={`tt-timer ${urgent ? "tt-timer-urgent" : ""}`}>
               <span>⏱</span>
               <span className="tt-timer-value">{formatTime(timeLeft)}</span>
             </div>
           )}
-          <button className="tt-btn-submit-top" onClick={() => setShowConfirm(true)} disabled={submitting}>
-            {submitting ? 'Submitting…' : 'Submit'}
+          <button
+            className="tt-btn-submit-top"
+            onClick={() => setShowConfirm(true)}
+            disabled={submitting}
+          >
+            {submitting ? "Submitting…" : "Submit"}
           </button>
         </div>
       </div>
@@ -224,8 +299,10 @@ function TakeTest({ assessment, onNavigate }) {
 
       {/* Progress bar */}
       <div className="tt-progress-track">
-        <div className="tt-progress-fill"
-          style={{ width: `${((currentIdx + 1) / questions.length) * 100}%` }} />
+        <div
+          className="tt-progress-fill"
+          style={{ width: `${((currentIdx + 1) / questions.length) * 100}%` }}
+        />
       </div>
 
       {/* Body */}
@@ -235,9 +312,12 @@ function TakeTest({ assessment, onNavigate }) {
           {questions.map((qs, i) => {
             const answered = answers[qs.id]?.trim();
             return (
-              <button key={qs.id} onClick={() => setCurrentIdx(i)}
-                className={`tt-dot ${i === currentIdx ? 'tt-dot-active' : answered ? 'tt-dot-answered' : ''}`}
-                title={`Question ${i + 1}`}>
+              <button
+                key={qs.id}
+                onClick={() => setCurrentIdx(i)}
+                className={`tt-dot ${i === currentIdx ? "tt-dot-active" : answered ? "tt-dot-answered" : ""}`}
+                title={`Question ${i + 1}`}
+              >
                 {i + 1}
               </button>
             );
@@ -248,36 +328,52 @@ function TakeTest({ assessment, onNavigate }) {
         <div className="tt-q-card">
           <div className="tt-q-meta">
             <span className="tt-q-num">Q{currentIdx + 1}</span>
-            <span className="tt-q-marks">{q?.marks} mark{q?.marks !== 1 ? 's' : ''}</span>
+            <span className="tt-q-marks">
+              {q?.marks} mark{q?.marks !== 1 ? "s" : ""}
+            </span>
           </div>
           <div className="tt-q-text">{q?.text}</div>
           <textarea
             className="tt-answer-input"
             rows={rows}
             placeholder="Type your answer here…"
-            value={answers[q?.id] ?? ''}
-            onChange={e => setAnswers(prev => ({ ...prev, [q.id]: e.target.value }))}
+            value={answers[q?.id] ?? ""}
+            onChange={(e) =>
+              setAnswers((prev) => ({ ...prev, [q.id]: e.target.value }))
+            }
           />
           <div className="tt-word-count">
-            {answers[q?.id]?.trim().split(/\s+/).filter(Boolean).length || 0} words
-            {answers[q?.id]?.trim() && <span className="tt-answered-check"> · ✓ Answered</span>}
+            {answers[q?.id]?.trim().split(/\s+/).filter(Boolean).length || 0}{" "}
+            words
+            {answers[q?.id]?.trim() && (
+              <span className="tt-answered-check"> · ✓ Answered</span>
+            )}
           </div>
         </div>
 
         {/* Navigation */}
         <div className="tt-nav">
-          <button className="tt-btn-ghost"
-            onClick={() => setCurrentIdx(i => Math.max(0, i - 1))}
-            disabled={currentIdx === 0}>
+          <button
+            className="tt-btn-ghost"
+            onClick={() => setCurrentIdx((i) => Math.max(0, i - 1))}
+            disabled={currentIdx === 0}
+          >
             ← Previous
           </button>
           {isLast ? (
-            <button className="tt-btn-submit" onClick={() => setShowConfirm(true)}>
+            <button
+              className="tt-btn-submit"
+              onClick={() => setShowConfirm(true)}
+            >
               Review &amp; Submit
             </button>
           ) : (
-            <button className="tt-btn-primary"
-              onClick={() => setCurrentIdx(i => Math.min(questions.length - 1, i + 1))}>
+            <button
+              className="tt-btn-primary"
+              onClick={() =>
+                setCurrentIdx((i) => Math.min(questions.length - 1, i + 1))
+              }
+            >
               Next →
             </button>
           )}
@@ -291,18 +387,90 @@ function TakeTest({ assessment, onNavigate }) {
             <h3 className="tt-modal-title">Submit Assessment?</h3>
             {unansweredCount > 0 ? (
               <div className="tt-modal-warn">
-                <p>You have <strong>{unansweredCount}</strong> unanswered question{unansweredCount !== 1 ? 's' : ''}.</p>
-                <p className="tt-modal-note">You cannot change your answers after submission.</p>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: 8,
+                  }}
+                >
+                  <span style={{ fontSize: 18 }}>⚠️</span>
+                  <strong style={{ fontSize: 14, color: "#92400e" }}>
+                    {unansweredCount} unanswered question
+                    {unansweredCount !== 1 ? "s" : ""}
+                  </strong>
+                </div>
+                <p
+                  style={{
+                    fontSize: 13,
+                    color: "#555",
+                    margin: 0,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  Unanswered questions will receive <strong>zero marks</strong>.
+                  Are you sure you want to submit?
+                </p>
+                {/* Show which questions are blank */}
+                <div
+                  style={{
+                    marginTop: 10,
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 6,
+                  }}
+                >
+                  {questions.map((q, i) =>
+                    !answers[q.id]?.trim() ? (
+                      <span
+                        key={q.id}
+                        style={{
+                          background: "#fef3c7",
+                          color: "#92400e",
+                          fontSize: 11,
+                          fontWeight: 700,
+                          padding: "2px 8px",
+                          borderRadius: 4,
+                        }}
+                      >
+                        Q{i + 1} blank
+                      </span>
+                    ) : null,
+                  )}
+                </div>
+                <p className="tt-modal-note" style={{ marginTop: 8 }}>
+                  You cannot change your answers after submission.
+                </p>
               </div>
             ) : (
-              <p className="tt-modal-text">
-                All {questions.length} questions answered. You cannot change your answers after submission.
-              </p>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  marginBottom: 12,
+                }}
+              >
+                <span style={{ fontSize: 18 }}>✅</span>
+                <p className="tt-modal-text" style={{ margin: 0 }}>
+                  All {questions.length} questions answered. Ready to submit.
+                </p>
+              </div>
             )}
             <div className="tt-modal-actions">
-              <button className="tt-btn-ghost" onClick={() => setShowConfirm(false)}>Go Back</button>
-              <button className="tt-btn-submit" onClick={() => handleSubmit(false)} disabled={submitting}>
-                {submitting ? 'Submitting…' : 'Submit Now'}
+              <button
+                className="tt-btn-ghost"
+                onClick={() => setShowConfirm(false)}
+              >
+                Go Back
+              </button>
+              <button
+                className="tt-btn-submit"
+                onClick={() => handleSubmit(false)}
+                disabled={submitting}
+              >
+                {submitting ? "Submitting…" : "Submit Now"}
               </button>
             </div>
           </div>

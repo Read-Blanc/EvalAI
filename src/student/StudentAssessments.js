@@ -1,5 +1,3 @@
-/* eslint-disable react-hooks/set-state-in-effect */
-/* eslint-disable no-unused-vars */
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 import { useUser } from '../UserContext';
@@ -52,7 +50,7 @@ function StudentAssessments({ onNavigate }) {
   const [codeError,  setCodeError]  = useState('');
   const [codeOk,     setCodeOk]     = useState('');
   const [joining,    setJoining]    = useState(false);
-  const [toast,      setToast]      = useState('');
+  const [toast]      = useState('');
   const [now,        setNow]        = useState(() => new Date());
 
   // Tick every 30s so countdown labels refresh
@@ -154,10 +152,6 @@ function StudentAssessments({ onNavigate }) {
     fetchAssessments();
   };
 
-  const showToast = (msg) => {
-    setToast(msg);
-    setTimeout(() => setToast(''), 3500);
-  };
 
   const shown =
     activeTab === 'Available' ? available :

@@ -1,0 +1,789 @@
+/* ========================================
+   EVALAI — GLOBAL MOBILE RESPONSIVE FIXES
+   Add this as src/mobile.css and import it
+   in src/index.js after all other imports
+   ======================================== */
+
+/* ========== SHARED TOPBAR FIX ========== */
+@media (max-width: 768px) {
+  /* All topbars get padding-left to clear the hamburger button */
+  .dash-topbar,
+  .assess-topbar,
+  .gq-topbar,
+  .gd-topbar,
+  .an-topbar,
+  .res-topbar,
+  .rd-topbar,
+  .stu-assess-topbar,
+  .san-topbar,
+  .settings-topbar,
+  .tt-header {
+    padding-left: 56px !important;
+  }
+}
+
+/* ========== LECTURER DASHBOARD ========== */
+@media (max-width: 1024px) {
+  .dash-stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dash-grid-3col {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .dash-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .dash-content {
+    padding: 16px;
+  }
+
+  .dash-stats-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .dash-stat-card {
+    padding: 12px 14px;
+  }
+
+  .dash-stat-value {
+    font-size: 22px;
+  }
+
+  .dash-grid-3col {
+    grid-template-columns: 1fr;
+  }
+
+  .dash-grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .dash-qa-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dash-topbar-actions {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .dash-stats-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .dash-qa-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .dash-welcome-greeting {
+    font-size: 18px;
+  }
+}
+
+/* ========== ASSESSMENTS PAGE ========== */
+@media (max-width: 768px) {
+  .assess-topbar {
+    padding: 12px 16px 12px 56px;
+    height: auto;
+  }
+
+  .assess-filter-row {
+    padding: 12px 16px 0;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+
+  .assess-filter-tab {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .assess-table-card {
+    margin: 0 16px 16px;
+    overflow-x: auto;
+  }
+
+  .assess-table {
+    min-width: 600px;
+  }
+
+  .assess-panel {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .assess-field-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ========== GRADING QUEUE ========== */
+@media (max-width: 768px) {
+  .gq-topbar {
+    padding: 12px 16px 12px 56px;
+    height: auto;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .gq-topbar-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .gq-search-input {
+    width: 100%;
+    flex: 1;
+  }
+
+  .gq-filter-select {
+    flex: 1;
+  }
+
+  .gq-filter-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 12px 16px 0;
+  }
+
+  .gq-filter-row {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding: 0;
+    width: 100%;
+  }
+
+  .gq-filter-tab {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .gq-table-card {
+    margin: 0 16px 16px;
+    overflow-x: auto;
+  }
+
+  .gq-table {
+    min-width: 580px;
+  }
+}
+
+/* ========== GRADING DETAIL ========== */
+@media (max-width: 1100px) {
+  .gd-main {
+    grid-template-columns: 1fr;
+  }
+
+  .gd-sidebar {
+    position: static;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .gd-metrics-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .gd-body {
+    padding: 16px;
+  }
+
+  .gd-topbar {
+    padding: 0 16px 0 56px;
+    height: auto;
+    min-height: 52px;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .gd-breadcrumb {
+    font-size: 12px;
+    flex-wrap: wrap;
+  }
+
+  .gd-metrics-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .gd-metric-value {
+    font-size: 22px;
+  }
+
+  .gd-sidebar {
+    grid-template-columns: 1fr;
+  }
+
+  .gd-title {
+    font-size: 18px;
+  }
+}
+
+/* ========== LECTURER ANALYTICS ========== */
+@media (max-width: 1024px) {
+  .an-stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .an-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .an-topbar {
+    padding: 12px 16px 12px 56px;
+    height: auto;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .an-select {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .an-body {
+    padding: 16px;
+  }
+
+  .an-stats-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .an-stat-value {
+    font-size: 22px;
+  }
+
+  .an-table-wrap {
+    overflow-x: auto;
+  }
+
+  .an-table {
+    min-width: 500px;
+  }
+}
+
+@media (max-width: 480px) {
+  .an-stats-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ========== STUDENT DASHBOARD ========== */
+@media (max-width: 1024px) {
+  .dash-grid-3col {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .dash-grid-3col > .dash-card[style*="gridColumn"] {
+    grid-column: 1 !important;
+  }
+}
+
+/* ========== STUDENT ASSESSMENTS ========== */
+@media (max-width: 768px) {
+  .stu-assess-topbar {
+    padding: 12px 16px 12px 56px;
+    height: auto;
+  }
+
+  .stu-assess-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+
+  .stu-assess-tab {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .stu-assess-list {
+    padding: 16px;
+  }
+
+  .stu-assess-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .stu-assess-card-right {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .stu-code-form {
+    flex-direction: column;
+  }
+
+  .stu-btn-primary {
+    width: 100%;
+  }
+}
+
+/* ========== TAKE TEST ========== */
+@media (max-width: 768px) {
+  .tt-header {
+    padding: 0 12px 0 56px;
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 56px;
+    gap: 6px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .tt-header-left {
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .tt-header-title {
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 160px;
+  }
+
+  .tt-header-right {
+    gap: 6px;
+  }
+
+  .tt-body {
+    padding: 0 16px;
+    margin: 20px auto;
+  }
+
+  .tt-q-card {
+    padding: 20px;
+  }
+
+  .tt-nav-dots {
+    gap: 4px;
+  }
+
+  .tt-dot {
+    width: 28px;
+    height: 28px;
+    font-size: 10px;
+  }
+
+  .tt-done-card {
+    margin: 40px 16px;
+    padding: 32px 20px;
+  }
+
+  .tt-modal {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tt-header-counter {
+    display: none;
+  }
+
+  .tt-back-btn {
+    font-size: 12px;
+    padding: 4px;
+  }
+}
+
+/* ========== RESULTS PAGE ========== */
+@media (max-width: 768px) {
+  .res-topbar {
+    padding: 12px 16px 12px 56px;
+  }
+
+  .res-filter-row {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+
+  .res-filter-tab {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .res-list {
+    padding: 16px;
+  }
+
+  .res-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .res-card-right {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+/* ========== RESULT DETAIL ========== */
+@media (max-width: 1000px) {
+  .rd-main {
+    grid-template-columns: 1fr;
+  }
+
+  .rd-sidebar {
+    position: static;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .rd-metrics-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .rd-topbar {
+    padding: 0 16px 0 56px;
+    min-height: 52px;
+    height: auto;
+  }
+
+  .rd-body {
+    padding: 16px;
+  }
+
+  .rd-metrics-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .rd-metric-value {
+    font-size: 22px;
+  }
+
+  .rd-sidebar {
+    grid-template-columns: 1fr;
+  }
+
+  .rd-title {
+    font-size: 18px;
+  }
+}
+
+/* ========== STUDENT ANALYTICS ========== */
+@media (max-width: 1024px) {
+  .san-stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .san-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .san-topbar {
+    padding: 12px 16px 12px 56px;
+    height: auto;
+  }
+
+  .san-body {
+    padding: 16px;
+  }
+
+  .san-stats-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .san-stat-value {
+    font-size: 22px;
+  }
+
+  .san-bar-chart-wrap {
+    padding: 12px;
+    overflow-x: auto;
+  }
+
+  .san-bar-chart {
+    min-width: 320px;
+  }
+}
+
+/* ========== SETTINGS PAGE ========== */
+@media (max-width: 768px) {
+  .settings-topbar {
+    padding: 0 16px 0 56px;
+    height: 56px;
+  }
+
+  .settings-content {
+    padding: 16px;
+  }
+
+  .settings-account-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .settings-danger-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}
+
+/* ========== LOGIN / SIGNUP PAGES ========== */
+@media (max-width: 768px) {
+  .login-container {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .login-card {
+    border-right: none;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 40px 24px;
+  }
+
+  .login-side {
+    display: none;
+  }
+
+  .login-title {
+    font-size: 24px;
+  }
+
+  .social-login {
+    grid-template-columns: 1fr;
+  }
+
+  .form-options {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}
+
+/* ========== GENERAL FIXES ========== */
+@media (max-width: 768px) {
+  /* Prevent horizontal scroll on any page */
+  body {
+    overflow-x: hidden;
+  }
+
+  /* Make all tables scroll horizontally */
+  .assess-table-card,
+  .gq-table-card {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Fix toast positioning on mobile */
+  .assess-toast,
+  .gq-toast,
+  .gd-toast,
+  .settings-toast,
+  .stu-assess-toast {
+    width: calc(100% - 32px);
+    text-align: center;
+    white-space: normal;
+  }
+}
+
+/* ============================================================
+   EvalAI — Mobile Responsiveness
+   Import in src/index.css after all other imports
+   ============================================================ */
+
+/* ---- Sidebar overlay on mobile ---- */
+@media (max-width: 768px) {
+
+  /* Sidebar becomes a drawer */
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    z-index: 200;
+    width: 260px !important;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+    box-shadow: 4px 0 24px rgba(0,0,0,0.12);
+  }
+
+  /* Overlay behind open sidebar */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    z-index: 199;
+    animation: overlay-fade 0.2s ease;
+  }
+
+  .sidebar-overlay.open {
+    display: block;
+  }
+
+  @keyframes overlay-fade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  /* Hamburger button */
+  .sidebar-hamburger {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 198;
+    width: 38px;
+    height: 38px;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: box-shadow 0.15s;
+  }
+
+  .sidebar-hamburger:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  }
+
+  /* Main content — no left margin on mobile */
+  .app-layout-main {
+    margin-left: 0 !important;
+  }
+
+  /* All topbars get left padding to clear hamburger */
+  .gq-topbar,
+  .assess-topbar,
+  .gd-topbar,
+  .rd-topbar,
+  .res-topbar,
+  .stu-assess-topbar,
+  .settings-topbar,
+  .san-topbar,
+  .an-topbar,
+  .tt-header {
+    padding-left: 60px !important;
+  }
+
+  /* ---- Dashboard ---- */
+  .dash-topbar { padding-left: 60px !important; }
+  .dash-stats-row { grid-template-columns: 1fr 1fr !important; }
+  .dash-grid-3col { grid-template-columns: 1fr !important; }
+  .dash-grid-2    { grid-template-columns: 1fr !important; }
+  .dash-card[style*="gridColumn"] { grid-column: 1 !important; }
+
+  /* ---- Grading Queue ---- */
+  .gq-topbar-actions {
+    flex-wrap: wrap;
+    gap: 6px !important;
+  }
+
+  .gq-search-input { width: 120px !important; }
+  .gq-filter-bar   { flex-direction: column; align-items: flex-start; }
+  .gq-table-card   { overflow-x: auto; }
+  .gq-table        { min-width: 600px; }
+
+  /* ---- Grading Detail ---- */
+  .gd-body    { padding: 16px !important; }
+  .gd-main    { grid-template-columns: 1fr !important; }
+  .gd-sidebar { position: static !important; }
+  .gd-metrics-row { grid-template-columns: 1fr 1fr !important; }
+
+  /* ---- Assessments table ---- */
+  .assess-table-card { overflow-x: auto; margin: 0 16px 16px !important; }
+  .assess-table      { min-width: 580px; }
+  .assess-panel      { width: 100% !important; }
+
+  /* ---- Results ---- */
+  .rd-main    { grid-template-columns: 1fr !important; }
+  .rd-sidebar { position: static !important; }
+  .rd-metrics-row { grid-template-columns: 1fr 1fr !important; }
+  .rd-body    { padding: 16px !important; }
+
+  /* ---- Student Assessments ---- */
+  .stu-assess-card {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .stu-assess-card-right {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  /* ---- TakeTest ---- */
+  .tt-body { padding: 0 16px !important; margin: 20px auto !important; }
+  .tt-q-card { padding: 20px !important; }
+  .tt-header { flex-wrap: wrap; gap: 8px; height: auto !important; padding: 10px 14px 10px 60px !important; }
+  .tt-header-right { gap: 6px !important; }
+
+  /* ---- Analytics ---- */
+  .an-body  { padding: 16px !important; }
+  .an-grid-2 { grid-template-columns: 1fr !important; }
+  .an-stats-row { grid-template-columns: 1fr 1fr !important; }
+
+  .san-body  { padding: 16px !important; }
+  .san-grid-2 { grid-template-columns: 1fr !important; }
+  .san-stats-row { grid-template-columns: 1fr 1fr !important; }
+
+  /* ---- Settings ---- */
+  .settings-content { padding: 16px !important; }
+  .settings-danger-row { flex-direction: column !important; align-items: flex-start !important; }
+
+  /* ---- Login / Signup ---- */
+  .login-container  { grid-template-columns: 1fr !important; height: auto !important; }
+  .login-card       { border-right: none !important; border-bottom: 1px solid #e0e0e0; padding: 40px 20px !important; }
+  .login-side       { padding: 32px 20px !important; }
+  .nav-right        { display: none !important; }
+  .social-login     { grid-template-columns: 1fr !important; }
+
+  /* ---- Toast positioning ---- */
+  .assess-toast,
+  .gq-toast,
+  .gd-toast,
+  .stu-assess-toast,
+  .settings-toast {
+    width: calc(100% - 32px) !important;
+    max-width: 400px;
+    text-align: center;
+  }
+}
+
+/* ---- Hamburger hidden on desktop ---- */
+.sidebar-hamburger {
+  display: none;
+}
+
+/* ---- Tablet tweaks ---- */
+@media (max-width: 1100px) {
+  .gd-metrics-row { grid-template-columns: repeat(2, 1fr) !important; }
+  .rd-metrics-row { grid-template-columns: repeat(2, 1fr) !important; }
+  .an-stats-row   { grid-template-columns: repeat(2, 1fr) !important; }
+}

@@ -314,27 +314,37 @@
   font-size: 14px;
   font-weight: 500;
   z-index: 200;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   animation: toastIn 0.2s ease;
 }
 
 @keyframes toastIn {
-  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
-  to   { opacity: 1; transform: translateX(-50%) translateY(0);   }
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
 
 /* ========== SLIDE-OUT PANEL ========== */
 .assess-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.3);
+  background: rgba(0, 0, 0, 0.3);
   z-index: 40;
   animation: fadeIn 0.2s ease;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .assess-panel {
@@ -345,7 +355,7 @@
   width: 440px;
   background: white;
   border-left: 1px solid #e0e0e0;
-  box-shadow: -4px 0 24px rgba(0,0,0,0.08);
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
   z-index: 50;
@@ -428,7 +438,9 @@
   font-size: 14px;
   color: #333;
   background: white;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
   font-family: inherit;
   width: 100%;
   box-sizing: border-box;
@@ -438,7 +450,7 @@
 .assess-select:focus {
   outline: none;
   border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102,126,234,0.12);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
 }
 
 .assess-textarea {
@@ -449,7 +461,9 @@
   color: #333;
   background: white;
   resize: vertical;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
   font-family: inherit;
   width: 100%;
   box-sizing: border-box;
@@ -458,7 +472,7 @@
 .assess-textarea:focus {
   outline: none;
   border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102,126,234,0.12);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
 }
 
 .assess-textarea-lg {
@@ -580,7 +594,9 @@
   display: grid;
   place-items: center;
   color: #666;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
   font-family: inherit;
 }
 
@@ -633,5 +649,373 @@
 
   .assess-field-row {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Add these to the bottom of src/lecturer/Assessments.css */
+
+/* ── Enrolled students button ── */
+.assess-enrolled-btn {
+  background: none;
+  border: none;
+  color: #667eea;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 0;
+  font-family: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.15s;
+}
+
+.assess-enrolled-btn:hover {
+  color: #5a6fd6;
+}
+
+/* ── Modal backdrop ── */
+.assess-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 60;
+  animation: fadeIn 0.2s ease;
+}
+
+/* ── Modal ── */
+.assess-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 61;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18);
+  width: 100%;
+  max-width: 520px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  animation: modal-pop 0.22s ease;
+}
+
+@keyframes modal-pop {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.assess-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.assess-modal-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.assess-modal-sub {
+  font-size: 12px;
+  color: #999;
+  margin-top: 2px;
+}
+
+.assess-modal-close {
+  background: #f0f0f0;
+  border: none;
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  font-size: 12px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background 0.15s;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+
+.assess-modal-close:hover {
+  background: #e0e0e0;
+}
+
+.assess-modal-body {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.assess-modal-empty {
+  padding: 32px 24px;
+  text-align: center;
+  color: #aaa;
+  font-size: 14px;
+}
+
+/* ── Students table inside modal ── */
+.assess-students-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.assess-students-table thead th {
+  padding: 10px 20px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #999;
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.assess-students-table tbody tr {
+  border-bottom: 1px solid #f5f5f5;
+  transition: background 0.15s;
+}
+
+.assess-students-table tbody tr:last-child {
+  border-bottom: none;
+}
+.assess-students-table tbody tr:hover {
+  background: #fafafa;
+}
+
+.assess-students-table tbody td {
+  padding: 12px 20px;
+  vertical-align: middle;
+}
+
+.assess-student-name {
+  font-weight: 600;
+  color: #1a1a1a;
+}
+.assess-student-email {
+  color: #888;
+  font-size: 12px;
+}
+
+/* ── Submission status badges ── */
+.assess-sub-status {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.assess-sub-graded {
+  background: #d1fae5;
+  color: #065f46;
+}
+.assess-sub-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+.assess-sub-none {
+  background: #f0f0f0;
+  color: #888;
+}
+
+/* ── Responsive ── */
+@media (max-width: 540px) {
+  .assess-modal {
+    max-width: calc(100% - 32px);
+  }
+}
+
+/* Add these to the bottom of src/lecturer/Assessments.css */
+
+/* ── Enrolled students button ── */
+.assess-enrolled-btn {
+  background: none;
+  border: none;
+  color: #667eea;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 0;
+  font-family: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.15s;
+}
+
+.assess-enrolled-btn:hover {
+  color: #5a6fd6;
+}
+
+/* ── Modal backdrop ── */
+.assess-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 60;
+  animation: fadeIn 0.2s ease;
+}
+
+/* ── Modal ── */
+.assess-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 61;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18);
+  width: 100%;
+  max-width: 520px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  animation: modal-pop 0.22s ease;
+}
+
+@keyframes modal-pop {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.assess-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.assess-modal-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.assess-modal-sub {
+  font-size: 12px;
+  color: #999;
+  margin-top: 2px;
+}
+
+.assess-modal-close {
+  background: #f0f0f0;
+  border: none;
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  font-size: 12px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background 0.15s;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+
+.assess-modal-close:hover {
+  background: #e0e0e0;
+}
+
+.assess-modal-body {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.assess-modal-empty {
+  padding: 32px 24px;
+  text-align: center;
+  color: #aaa;
+  font-size: 14px;
+}
+
+/* ── Students table inside modal ── */
+.assess-students-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.assess-students-table thead th {
+  padding: 10px 20px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #999;
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.assess-students-table tbody tr {
+  border-bottom: 1px solid #f5f5f5;
+  transition: background 0.15s;
+}
+
+.assess-students-table tbody tr:last-child {
+  border-bottom: none;
+}
+.assess-students-table tbody tr:hover {
+  background: #fafafa;
+}
+
+.assess-students-table tbody td {
+  padding: 12px 20px;
+  vertical-align: middle;
+}
+
+.assess-student-name {
+  font-weight: 600;
+  color: #1a1a1a;
+}
+.assess-student-email {
+  color: #888;
+  font-size: 12px;
+}
+
+/* ── Submission status badges ── */
+.assess-sub-status {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.assess-sub-graded {
+  background: #d1fae5;
+  color: #065f46;
+}
+.assess-sub-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+.assess-sub-none {
+  background: #f0f0f0;
+  color: #888;
+}
+
+/* ── Responsive ── */
+@media (max-width: 540px) {
+  .assess-modal {
+    max-width: calc(100% - 32px);
   }
 }

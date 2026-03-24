@@ -432,3 +432,37 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Add this to the bottom of src/LoginPage.css */
+
+/* ========== GOOGLE BUTTON ========== */
+.btn-google-full {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 11px 16px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.12s;
+  font-family: inherit;
+  margin-bottom: 20px;
+}
+
+.btn-google-full:hover {
+  background: #f9f9f9;
+  border-color: #bbb;
+  transform: translateY(-1px);
+}
+
+.btn-google-full:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}

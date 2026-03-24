@@ -1,0 +1,193 @@
+.rsp-page {
+  min-height: 100vh;
+  background: #f5f7fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.rsp-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 14px;
+  padding: 40px;
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  animation: rsp-rise 0.3s ease both;
+}
+
+@keyframes rsp-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rsp-logo {
+  display: inline-block;
+  background: #1a1a1a;
+  color: white;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 6px 14px;
+  border-radius: 6px;
+  letter-spacing: 0.3px;
+  margin-bottom: 24px;
+}
+
+.rsp-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 8px;
+}
+
+.rsp-sub {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  margin: 0 0 28px;
+}
+
+/* ── Role option cards ── */
+.rsp-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.rsp-option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  background: white;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    background 0.15s;
+  font-family: inherit;
+  width: 100%;
+  text-align: left;
+}
+
+.rsp-option:hover {
+  border-color: #bbb;
+  background: #fafafa;
+}
+
+.rsp-option-active {
+  border-color: #1a1a1a !important;
+  background: #fafafa !important;
+  box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.06);
+}
+
+.rsp-option-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rsp-option-body {
+  flex: 1;
+}
+
+.rsp-option-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 2px;
+}
+
+.rsp-option-desc {
+  font-size: 12px;
+  color: #888;
+}
+
+.rsp-option-check {
+  width: 20px;
+  height: 20px;
+  border: 1.5px solid #ddd;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s;
+}
+
+.rsp-option-active .rsp-option-check {
+  border-color: transparent;
+}
+
+/* ── Error ── */
+.rsp-error {
+  background: #fee;
+  border: 1px solid #fcc;
+  border-radius: 6px;
+  color: #c33;
+  font-size: 13px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  text-align: left;
+}
+
+/* ── CTA ── */
+.rsp-btn {
+  width: 100%;
+  padding: 13px;
+  background: #1a1a1a;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    transform 0.12s;
+  font-family: inherit;
+  margin-bottom: 14px;
+}
+
+.rsp-btn:hover:not(:disabled) {
+  background: #333;
+  transform: translateY(-1px);
+}
+
+.rsp-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.rsp-note {
+  font-size: 11px;
+  color: #bbb;
+  margin: 0;
+}
+
+@media (max-width: 480px) {
+  .rsp-card {
+    padding: 28px 20px;
+  }
+}

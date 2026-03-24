@@ -1,31 +1,23 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 import './ResultDetail.css';
 
-// ── Circular progress ring ───────────────────────────────────────────────────
 function CircularProgress({ value, max, size = 104, strokeWidth = 9 }) {
   const radius        = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const pct           = max > 0 ? Math.min(value / max, 1) : 0;
   const offset        = circumference * (1 - pct);
   const color         = pct >= 0.75 ? '#10b981' : pct >= 0.5 ? '#f59e0b' : '#ef4444';
-
   return (
     <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-      <circle cx={size/2} cy={size/2} r={radius}
-        fill="none" stroke="#e0e0e0" strokeWidth={strokeWidth} />
-      <circle cx={size/2} cy={size/2} r={radius}
-        fill="none" stroke={color} strokeWidth={strokeWidth}
-        strokeDasharray={circumference} strokeDashoffset={offset}
-        strokeLinecap="round"
-        style={{ transition: 'stroke-dashoffset 0.6s ease' }}
-      />
+      <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="#e0e0e0" strokeWidth={strokeWidth} />
+      <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke={color} strokeWidth={strokeWidth}
+        strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round"
+        style={{ transition: 'stroke-dashoffset 0.6s ease' }} />
     </svg>
   );
 }
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
 function gradeLabel(pct) {
   if (pct === null) return 'Not Graded';
   if (pct >= 90) return 'Excellent';
@@ -41,7 +33,6 @@ function formatDate(iso) {
   });
 }
 
-// Convert ai_score (0–1) into human-readable feedback
 function aiFeedbackText(aiScore) {
   if (aiScore === null || aiScore === undefined) return null;
   const pct = Math.round(aiScore * 100);
@@ -51,7 +42,6 @@ function aiFeedbackText(aiScore) {
   return `Low similarity (${pct}%) — the answer diverges from the reference. Consider reviewing this topic.`;
 }
 
-// ── Component ────────────────────────────────────────────────────────────────
 function ResultDetail({ submission, onNavigate }) {
   const [answers, setAnswers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -60,22 +50,41 @@ function ResultDetail({ submission, onNavigate }) {
     if (!submission) return;
     setLoading(true);
 
-    const { data, error } = await supabase
+    // Step 1: fetch answers without join
+    const { data: rawAnswers, error } = await supabase
       .from('answers')
-      .select('id, answer_text, marks_awarded, ai_score, questions(id, text, marks, sample_answer, order_index)')
+      .select('id, answer_text, marks_awarded, ai_score, question_id')
       .eq('submission_id', submission.id);
 
-    if (error || !data) { setLoading(false); return; }
+    if (error || !rawAnswers) { setLoading(false); return; }
 
-    setAnswers(
-      [...data].sort((a, b) => (a.questions?.order_index ?? 0) - (b.questions?.order_index ?? 0))
+    // Step 2: fetch questions separately
+    const questionIds = rawAnswers.map(a => a.question_id).filter(Boolean);
+    const { data: questions } = await supabase
+      .from('questions')
+      .select('id, text, marks, sample_answer, order_index')
+      .in('id', questionIds);
+
+    // Build lookup
+    const qLookup = {};
+    (questions ?? []).forEach(q => { qLookup[q.id] = q; });
+
+    // Merge and sort
+    const merged = rawAnswers.map(a => ({
+      ...a,
+      questions: qLookup[a.question_id] ?? null,
+    }));
+
+    const sorted = merged.sort(
+      (a, b) => (a.questions?.order_index ?? 0) - (b.questions?.order_index ?? 0)
     );
+
+    setAnswers(sorted);
     setLoading(false);
   }, [submission]);
 
   useEffect(() => { fetchAnswers(); }, [fetchAnswers]);
 
-  // Guard
   if (!submission) {
     return (
       <div className="rd-page">
@@ -87,14 +96,12 @@ function ResultDetail({ submission, onNavigate }) {
     );
   }
 
-  // Derived totals
   const totalMarks   = answers.reduce((sum, a) => sum + (a.questions?.marks ?? 0), 0);
   const awardedMarks = answers.reduce((sum, a) => sum + (a.marks_awarded ?? 0), 0);
   const pct          = submission.status === 'Graded' && totalMarks > 0
     ? Math.round((awardedMarks / totalMarks) * 100)
     : null;
-
-  const hasAiScores = answers.some(a => a.ai_score !== null);
+  const hasAiScores  = answers.some(a => a.ai_score !== null);
 
   return (
     <div className="rd-page">
@@ -158,7 +165,16 @@ function ResultDetail({ submission, onNavigate }) {
 
         {/* Main layout */}
         {loading ? (
-          <div className="rd-loading">Loading your answers…</div>
+          <div className="rd-skeleton-wrap">
+            {[1,2].map(i => (
+              <div key={i} className="rd-section-card">
+                <div className="rd-skeleton rd-skeleton-title" />
+                <div className="rd-skeleton rd-skeleton-line" />
+                <div className="rd-skeleton rd-skeleton-line rd-skeleton-short" />
+                <div className="rd-skeleton rd-skeleton-block" />
+              </div>
+            ))}
+          </div>
         ) : (
           <div className="rd-main">
 
@@ -166,6 +182,7 @@ function ResultDetail({ submission, onNavigate }) {
             <div className="rd-content">
               {submission.status !== 'Graded' ? (
                 <div className="rd-section-card rd-pending-card">
+                  <div className="rd-pending-icon">⏳</div>
                   <p className="rd-pending-text">
                     Your submission is pending review. Your score will appear here once graded.
                   </p>
@@ -183,7 +200,7 @@ function ResultDetail({ submission, onNavigate }) {
                   const feedback   = aiFeedbackText(a.ai_score);
 
                   return (
-                    <div key={a.id} className="rd-section-card">
+                    <div key={a.id} className="rd-section-card rd-answer-card">
                       {/* Question header */}
                       <div className="rd-q-header">
                         <span className="rd-q-label">Question {idx + 1}</span>
@@ -279,7 +296,7 @@ function ResultDetail({ submission, onNavigate }) {
                 ))}
               </div>
 
-              {/* AI Analysis sidebar — only when graded and ai_score data exists */}
+              {/* AI Analysis sidebar */}
               {submission.status === 'Graded' && hasAiScores && (
                 <div className="rd-side-card">
                   <div className="rd-grade-header">AI Analysis</div>

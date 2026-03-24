@@ -1,0 +1,160 @@
+/* ============================================================
+   EvalAI — Global Transitions & Micro-animations
+   Import this in src/index.css or src/App.css
+   ============================================================ */
+
+/* Smooth page-level fade when navigating */
+.app-layout-main {
+  animation: page-enter 0.25s ease both;
+}
+
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
+/* ---- Buttons — all feel snappy ---- */
+button {
+  transition: background 0.15s ease, border-color 0.15s ease,
+              color 0.15s ease, transform 0.12s ease,
+              box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+button:active:not(:disabled) {
+  transform: scale(0.97) !important;
+}
+
+/* ---- Cards hover lift ---- */
+.gd-section-card,
+.rd-section-card,
+.gd-side-card,
+.rd-side-card,
+.res-card,
+.stu-assess-card,
+.assess-table tbody tr,
+.gq-row,
+.dash-stat-card,
+.dash-card,
+.san-stat-card,
+.san-card {
+  transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.15s ease !important;
+}
+
+.gd-section-card:hover,
+.rd-section-card:hover,
+.gd-side-card:hover,
+.rd-side-card:hover,
+.dash-stat-card:hover {
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  transform: translateY(-1px);
+}
+
+/* ---- Sidebar nav items ---- */
+.sidebar-menu a {
+  transition: background 0.15s ease, color 0.15s ease, padding-left 0.15s ease !important;
+}
+
+.sidebar-menu a:hover {
+  padding-left: 16px !important;
+}
+
+.sidebar-menu li.active a {
+  padding-left: 12px !important;
+}
+
+/* ---- Form inputs focus ring ---- */
+.form-input:focus,
+.assess-input:focus,
+.assess-textarea:focus,
+.gd-override-input:focus,
+.stu-code-input:focus,
+.settings-input:focus,
+.tt-answer-input:focus {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+/* ---- Badge / chip pulse on load ---- */
+.gd-badge-complete,
+.rd-badge,
+.gq-status-chip,
+.assess-badge,
+.stu-badge {
+  animation: badge-pop 0.3s ease both;
+}
+
+@keyframes badge-pop {
+  0%   { opacity: 0; transform: scale(0.85); }
+  60%  { transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* ---- Score bar fill transition (already in component CSS but ensure) ---- */
+.rd-score-bar-fill,
+.rd-ai-sidebar-fill,
+.an-dist-fill,
+.san-dist-fill,
+.gd-match-fill {
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* ---- Circular progress ring ---- */
+svg circle[stroke-dashoffset] {
+  transition: stroke-dashoffset 0.7s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* ---- Modal / panel slide-in (assess-panel already has this, add for toast) ---- */
+.assess-toast,
+.gq-toast,
+.gd-toast,
+.stu-assess-toast,
+.settings-toast {
+  animation: toast-slide-up 0.22s ease both !important;
+}
+
+@keyframes toast-slide-up {
+  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ---- Tab filter active indicator slide ---- */
+.assess-filter-tab,
+.gq-filter-tab,
+.res-filter-tab,
+.stu-assess-tab {
+  transition: color 0.15s ease, border-color 0.15s ease,
+              background 0.15s ease !important;
+}
+
+/* ---- Avatar color gen transition ---- */
+.gq-avatar {
+  transition: background 0.3s ease !important;
+}
+
+/* ---- Progress bar (grading queue topbar) ---- */
+.gq-progress-inline-fill {
+  transition: width 0.6s ease !important;
+}
+
+/* ---- Notification dot pulse ---- */
+.dash-notif-dot {
+  animation: notif-pulse 2s infinite;
+}
+
+@keyframes notif-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.6; transform: scale(0.85); }
+}
+
+/* ---- Loading spinner (already in GradingDetail but ensure smooth) ---- */
+.gd-ai-spinner {
+  animation: gd-spin 0.65s linear infinite !important;
+}
+
+/* ---- Reduce motion: respect user preference ---- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -476,3 +476,11 @@
   .gq-search-input   { width: 140px; }
   .gq-filter-bar     { flex-direction: column; align-items: flex-start; }
 }
+
+/* Empty state icon wrap */
+.gq-empty-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
