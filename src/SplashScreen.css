@@ -1,129 +1,91 @@
-.splash-screen {
+/* ========== SPLASH OVERLAY ========== */
+.splash-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  inset: 0;
+  z-index: 9999;
+  background: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
-  transition: opacity 0.5s ease-out;
-  opacity: 1;
 }
 
-.splash-screen.fade-out {
-  opacity: 0;
-  pointer-events: none;
-}
-
+/* ========== CONTENT STACK ========== */
 .splash-content {
-  text-align: center;
-  color: white;
-  animation: slideUp 0.8s ease-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
 }
 
-.splash-logo-container {
-  margin-bottom: 40px;
-  animation: bounce 2s infinite;
-}
-
-.splash-logo {
-  width: 120px;
-  height: 120px;
-  margin: 0 auto;
+/* ========== SPINNING RING ========== */
+.splash-ring-wrap {
   position: relative;
-  animation: rotate 4s linear infinite;
+  width: 64px;
+  height: 64px;
 }
 
-.logo-circle {
+.splash-ring-svg {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  border: 4px solid white;
-  border-radius: 50%;
-  position: relative;
-  box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
 }
 
-.logo-circle::before {
-  content: '';
+.splash-ring-arc {
+  transform-origin: 32px 32px;
+  animation: splashRotate 1.4s linear infinite;
+}
+
+/* Checkmark icon centred inside the ring */
+.splash-ring-icon {
   position: absolute;
-  width: 60%;
-  height: 60%;
-  background: white;
-  border-radius: 50%;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  opacity: 0.3;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ========== WORDMARK ========== */
+.splash-wordmark {
+  text-align: center;
 }
 
 .splash-title {
-  font-size: 48px;
+  font-size: 30px;
   font-weight: 700;
-  margin: 20px 0 10px 0;
-  letter-spacing: 2px;
-  animation: fadeInText 1s ease-out 0.3s both;
+  color: #030712;
+  letter-spacing: -0.5px;
+  line-height: 1;
 }
 
 .splash-subtitle {
-  font-size: 18px;
-  font-weight: 300;
-  margin: 0 0 40px 0;
-  letter-spacing: 1px;
-  animation: fadeInText 1s ease-out 0.5s both;
+  font-size: 11px;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  margin-top: 6px;
 }
 
-.splash-loader {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  animation: fadeInText 1s ease-out 0.7s both;
+/* ========== PROGRESS BAR ========== */
+.splash-bar-track {
+  width: 112px;
+  height: 2px;
+  background: #f3f4f6;
+  border-radius: 999px;
+  overflow: hidden;
 }
 
-.loader-dot {
-  width: 12px;
-  height: 12px;
-  background: white;
-  border-radius: 50%;
-  animation: pulse 1.4s infinite;
+.splash-bar-fill {
+  height: 100%;
+  background: #111111;
+  border-radius: 999px;
+  width: 0%;
+  animation: splashBar 3s ease forwards;
 }
 
-.loader-dot:nth-child(1) {
-  animation-delay: 0s;
-}
-
-.loader-dot:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.loader-dot:nth-child(3) {
-  animation-delay: 0.4s;
-}
-
-/* Animations */
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeInText {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes rotate {
+/* ========== KEYFRAMES ========== */
+@keyframes splashRotate {
   from {
     transform: rotate(0deg);
   }
@@ -132,22 +94,11 @@
   }
 }
 
-@keyframes bounce {
-  0%, 100% {
-    transform: translateY(0);
+@keyframes splashBar {
+  from {
+    width: 0%;
   }
-  50% {
-    transform: translateY(-20px);
-  }
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.4;
-    transform: scale(0.8);
+  to {
+    width: 100%;
   }
 }
